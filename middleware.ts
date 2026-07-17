@@ -1,34 +1,54 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
-
-const SITE_PASSWORD = process.env.SITE_PASSWORD ?? ''
-const COOKIE_NAME = 'plazza_access'
+import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Always allow admin routes through to Supabase auth middleware
+  // Handle admin auth
   if (pathname.startsWith('/admin')) {
-    return await updateSession(request)
+    let response = NextResponse.next({ request })
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll() },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            response = NextResponse.next({ request })
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+          },
+        },
+      }
+    )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user && pathname !== '/admin/login') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin/login'
+      return NextResponse.redirect(url)
+    }
+    return response
   }
 
-  // Check for valid access cookie
-  const cookie = request.cookies.get(COOKIE_NAME)
-  if (cookie?.value === SITE_PASSWORD) {
+  // Allow gate page and API
+  if (pathname === '/gate' || pathname.startsWith('/api/gate')) {
     return NextResponse.next()
   }
 
-  // Allow the password form page and its POST action
-  if (pathname === '/gate') {
+  // Check access cookie
+  const cookie = request.cookies.get('plazza_access')
+  const sitePassword = process.env.SITE_PASSWORD
+
+  if (sitePassword && cookie?.value === sitePassword) {
     return NextResponse.next()
   }
 
-  // Redirect everything else to the gate
+  // Redirect to gate
   const url = request.nextUrl.clone()
   url.pathname = '/gate'
   return NextResponse.redirect(url)
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/submit).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
