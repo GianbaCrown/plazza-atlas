@@ -10,7 +10,7 @@ export default function LocationSearch({
   const [results, setResults] = useState<Result[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+ const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
     if (!query || query.length < 3) { setResults([]); return }
