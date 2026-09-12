@@ -10,10 +10,28 @@ export default function LocationSearch({
   const [results, setResults] = useState<Result[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
- const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const justSelectedRef = useRef(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Close on outside click/tap (fixes mobile)
+  useEffect(() => {
+    function handleOutside(e: MouseEvent | TouchEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('touchstart', handleOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
+  }, [])
 
   useEffect(() => {
     if (!query || query.length < 3) { setResults([]); return }
+    if (justSelectedRef.current) return
     setLoading(true)
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
@@ -25,13 +43,20 @@ export default function LocationSearch({
     return () => clearTimeout(debounceRef.current)
   }, [query])
 
+  function handleSelect(r: Result) {
+    justSelectedRef.current = true
+    setQuery(r.display_name)
+    setResults([])
+    setOpen(false)
+    onSelect(r)
+    setTimeout(() => { justSelectedRef.current = false }, 500)
+  }
+
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <input
         value={query}
         onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
-        onFocus={() => results.length > 0 && setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder={placeholder ?? 'Start typing an address...'}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
       />
@@ -39,8 +64,11 @@ export default function LocationSearch({
       {open && results.length > 0 && (
         <ul className="absolute z-20 w-full bg-white border rounded-lg mt-1 shadow-lg divide-y max-h-56 overflow-y-auto">
           {results.map((r, i) => (
-            <li key={i} className="p-2.5 text-sm hover:bg-amber-50 cursor-pointer"
-              onMouseDown={() => { onSelect(r); setQuery(r.display_name); setOpen(false) }}>
+            <li key={i}
+              className="p-2.5 text-sm hover:bg-amber-50 cursor-pointer"
+              onMouseDown={() => handleSelect(r)}
+              onTouchEnd={() => handleSelect(r)}
+            >
               {r.display_name}
             </li>
           ))}

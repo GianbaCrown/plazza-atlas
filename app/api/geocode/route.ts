@@ -1,5 +1,25 @@
 import { NextResponse } from 'next/server'
 
+function formatResult(r: any) {
+  const a = r.address || {}
+  const parts: string[] = []
+
+  if (a.house_number && a.road) parts.push(`${a.house_number} ${a.road}`)
+  else if (a.road) parts.push(a.road)
+
+  const city = a.city || a.town || a.village || a.municipality || a.county || ''
+  if (city) parts.push(city)
+  if (a.country) parts.push(a.country)
+
+  return {
+    display_name: parts.join(', '),
+    lat: parseFloat(r.lat),
+    lng: parseFloat(r.lon),
+    city,
+    country: a.country || '',
+  }
+}
+
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams.get('q')
   if (!q) return NextResponse.json([])
@@ -8,13 +28,5 @@ export async function GET(req: Request) {
     { headers: { 'User-Agent': 'PlazzaAtlas/1.0' } }
   )
   const data = await res.json()
-  return NextResponse.json(
-    data.map((r: any) => ({
-      display_name: r.display_name,
-      lat: parseFloat(r.lat),
-      lng: parseFloat(r.lon),
-      city: r.address?.city || r.address?.town || r.address?.village || '',
-      country: r.address?.country || '',
-    }))
-  )
+  return NextResponse.json(data.map(formatResult))
 }
