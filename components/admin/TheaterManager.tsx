@@ -34,7 +34,7 @@ export default function TheaterManager() {
 
   useEffect(() => {
     loadTheaters()
-    supabase.from('sources').select('id, name').order('name').then(({ data }) => setSources(data ?? []))
+       supabase.from('sources').select('id, name').order('name').then(({ data }: { data: any }) => setSources(data ?? []))
   }, [])
 
   function update(key: string, value: any) {
