@@ -92,7 +92,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
           transition: 'transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
         }}
       />
-      <button
+      <button 
         onClick={() => router.push('/?view=map')}
         className={`relative z-10 px-3.5 py-1 rounded-full transition-colors duration-200 cursor-pointer min-w-[48px] text-center ${isMapActive ? (isMap ? 'text-gray-900' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}
       >
