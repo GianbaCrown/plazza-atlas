@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import Supercluster from 'supercluster'
@@ -49,9 +49,8 @@ function richPopupHTML(t: Theater) {
 }
 
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
-  const searchParams = useSearchParams()
   const router = useRouter()
-  const isListView = searchParams.get('view') === 'list'
+  const [view, setView] = useState<'map' | 'list'>('map')
 
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -63,30 +62,22 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   useEffect(() => { routerRef.current = router }, [router])
 
   function flyToTheater(t: Theater) {
-    if (isListView) {
-      router.push(`/?view=map`)
-      setTimeout(() => {
-        mapRef.current?.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
-      }, 100)
-      return
-    }
+    setView('map')
     const map = mapRef.current
     if (!map) return
-    const onMoveEnd = () => {
-      popupRef.current!.setLngLat([t.lng, t.lat]).setHTML(richPopupHTML(t)).addTo(map)
-      map.off('moveend', onMoveEnd)
-    }
-    map.on('moveend', onMoveEnd)
-    map.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
+    setTimeout(() => {
+      map.resize()
+      const onMoveEnd = () => {
+        popupRef.current!.setLngLat([t.lng, t.lat]).setHTML(richPopupHTML(t)).addTo(map)
+        map.off('moveend', onMoveEnd)
+      }
+      map.on('moveend', onMoveEnd)
+      map.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
+    }, 50)
   }
 
   useEffect(() => {
-    if (isListView) return
-    if (!mapContainer.current) return
-    if (mapRef.current) {
-      setTimeout(() => mapRef.current?.resize(), 50)
-      return
-    }
+    if (!mapContainer.current || mapRef.current) return
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
@@ -133,7 +124,9 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       markersOnScreen.forEach((m) => m.remove())
       markersOnScreen.length = 0
       const bounds = map.getBounds()
-      const bbox: [number, number, number, number] = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]
+      const bbox: [number, number, number, number] = [
+        bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()
+      ]
       const zoom = Math.floor(map.getZoom())
       const clusters = index.getClusters(bbox, zoom)
 
@@ -177,64 +170,80 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       map.remove()
       mapRef.current = null
     }
-  }, [isListView])
+  }, [])
 
-  // Countries for filter
+  // Resize map when switching back to map view
+  useEffect(() => {
+    if (view === 'map') {
+      setTimeout(() => mapRef.current?.resize(), 50)
+    }
+  }, [view])
+
   const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))]
   const decades = Array.from({ length: 13 }, (_, i) => 1900 + i * 10)
+  const isMap = view === 'map'
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {/* Map — always mounted, hidden when list view */}
-      <div
-        style={{ position: 'absolute', inset: 0, visibility: isListView ? 'hidden' : 'visible' }}
-      >
+      {/* Map — always mounted */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        visibility: isMap ? 'visible' : 'hidden',
+        pointerEvents: isMap ? 'auto' : 'none',
+      }}>
         <div ref={mapContainer} style={{ position: 'absolute', inset: 0 }} />
       </div>
 
-      {/* List view — rendered on top when active */}
-      {isListView && (
-        <div className="absolute inset-0 overflow-y-auto bg-[#fafaf9]">
-          <div className="pb-20">
-            <div className="max-w-6xl mx-auto px-4 py-6">
-              <div className="flex gap-3 mb-6 flex-wrap">
-                <select className="border rounded-lg px-3 py-2 text-sm cursor-pointer">
-                  <option value="">All countries</option>
-                  {countries.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <select className="border rounded-lg px-3 py-2 text-sm cursor-pointer">
-                  <option value="">All decades</option>
-                  {decades.map((d) => <option key={d} value={d}>{d}s</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {theaters.map((t) => (
-                  <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer">
-                    <div className="aspect-[3/4] relative bg-gray-200 rounded-xl overflow-hidden">
-                      {t.image_path && (
-                        <Image
-                          src={imageUrl(t.image_path)!}
-                          alt={t.name} fill
-                          className="object-cover group-hover:scale-105 transition duration-300"
-                        />
-                      )}
-                    </div>
-                    <p className="mt-2 font-medium text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
-                  </Link>
-                ))}
-              </div>
+      {/* List view */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        opacity: isMap ? 0 : 1,
+        pointerEvents: isMap ? 'none' : 'auto',
+        transition: 'opacity 200ms ease',
+        overflowY: 'auto',
+        background: '#fafaf9',
+      }}>
+        <div className="pb-20 pt-16">
+          <div className="max-w-6xl mx-auto px-4 py-6">
+            <div className="flex gap-3 mb-6 flex-wrap">
+              <select className="border rounded-lg px-3 py-2 text-sm cursor-pointer">
+                <option value="">All countries</option>
+                {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select className="border rounded-lg px-3 py-2 text-sm cursor-pointer">
+                <option value="">All decades</option>
+                {decades.map((d) => <option key={d} value={d}>{d}s</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {theaters.map((t) => (
+                <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer">
+                  <div className="aspect-[3/4] relative bg-gray-200 rounded-xl overflow-hidden">
+                    {t.image_path && (
+                      <Image
+                        src={imageUrl(t.image_path)!}
+                        alt={t.name} fill
+                        className="object-cover group-hover:scale-105 transition duration-300"
+                      />
+                    )}
+                  </div>
+                  <p className="mt-2 font-medium text-sm">{t.name}</p>
+                  <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Header always on top */}
       <div className="absolute top-0 left-0 right-0 z-20">
         <SiteHeader
-          variant={isListView ? 'page' : 'map'}
+          variant={isMap ? 'map' : 'page'}
           theaters={theaters}
           onTheaterSelect={flyToTheater}
+          view={view}
+          onViewChange={setView}
         />
       </div>
     </div>

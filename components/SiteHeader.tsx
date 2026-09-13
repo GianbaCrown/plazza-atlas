@@ -1,8 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Logo from './Logo'
-
 
 type Theater = {
   id: string; name: string; slug: string; lat: number; lng: number
@@ -13,9 +12,11 @@ type Props = {
   variant: 'map' | 'page'
   theaters?: Theater[]
   onTheaterSelect?: (t: Theater) => void
+  view?: 'map' | 'list'
+  onViewChange?: (v: 'map' | 'list') => void
 }
 
-export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: Props) {
+export default function SiteHeader({ variant, theaters = [], onTheaterSelect, view, onViewChange }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const [query, setQuery] = useState('')
@@ -24,8 +25,10 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const isMap = variant === 'map'
-  const searchParams = useSearchParams()
-  const isMapActive = pathname === '/' && searchParams.get('view') !== 'list'
+  const isHome = pathname === '/'
+
+  // For non-home pages, treat as map-inactive
+  const isMapActive = isHome ? view === 'map' : false
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -63,9 +66,17 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
     else router.push(`/theaters/${t.slug}`)
   }
 
+  function handleViewToggle(v: 'map' | 'list') {
+    if (isHome && onViewChange) {
+      onViewChange(v)
+    } else {
+      router.push('/')
+    }
+  }
+
   const inputClass = isMap
-    ? 'w-48 px-4 py-1.5 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-white/60 bg-white/15 backdrop-blur-sm text-white placeholder-white/50 border border-white/25 transition'
-    : 'w-52 px-4 py-1.5 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-100 text-gray-900 placeholder-gray-400 border border-gray-200 transition'
+    ? 'w-48 px-4 py-1.5 rounded-full text-sm focus:outline-none bg-white/15 backdrop-blur-sm text-white placeholder-white/50 border border-white/25 transition'
+    : 'w-52 px-4 py-1.5 rounded-full text-sm focus:outline-none bg-gray-100 text-gray-900 placeholder-gray-400 border border-gray-200 transition'
 
   const Dropdown = () => open && results.length > 0 ? (
     <ul className="absolute right-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-xl divide-y overflow-hidden z-30 border border-gray-100">
@@ -81,31 +92,62 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
     </ul>
   ) : null
 
-   const ViewToggle = () => (
-    <div className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/25' : 'bg-gray-100 border border-gray-200'}`}
-      style={{ isolation: 'isolate' }}>
-      {/* Sliding pill */}
+  const ViewToggle = () => {
+    const pillRef = useRef<HTMLDivElement>(null)
+    const trackRef = useRef<HTMLDivElement>(null)
+    const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
+    const mapBtnRef = useRef<HTMLButtonElement>(null)
+    const listBtnRef = useRef<HTMLButtonElement>(null)
+
+    useEffect(() => {
+      function measure() {
+        const active = isMapActive ? mapBtnRef.current : listBtnRef.current
+        const track = trackRef.current
+        if (!active || !track) return
+        const trackRect = track.getBoundingClientRect()
+        const btnRect = active.getBoundingClientRect()
+        setPillStyle({
+          width: btnRect.width,
+          left: btnRect.left - trackRect.left,
+        })
+      }
+      measure()
+      window.addEventListener('resize', measure)
+      return () => window.removeEventListener('resize', measure)
+    }, [isMapActive])
+
+    return (
       <div
-        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
-        style={{
-          transform: isMapActive ? 'translateX(2px)' : 'translateX(calc(100% + 2px))',
-          transition: 'transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-        }}
-      />
-      <button 
-        onClick={() => router.push('/?view=map')}
-        className={`relative z-10 px-3.5 py-1 rounded-full transition-colors duration-200 cursor-pointer min-w-[48px] text-center ${isMapActive ? (isMap ? 'text-gray-900' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+        ref={trackRef}
+        className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-gray-100 border border-gray-200'}`}
       >
-        Map
-      </button>
-      <button
-        onClick={() => router.push('/?view=list')}
-        className={`relative z-10 px-3.5 py-1 rounded-full transition-colors duration-200 cursor-pointer min-w-[48px] text-center ${!isMapActive ? (isMap ? 'text-gray-900' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-      >
-        List
-      </button>
-    </div>
-  )
+        {/* Sliding pill */}
+        <div
+          ref={pillRef}
+          className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
+          style={{
+            width: pillStyle.width,
+            left: pillStyle.left,
+            transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          }}
+        />
+        <button
+          ref={mapBtnRef}
+          onClick={() => handleViewToggle('map')}
+          className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+        >
+          Map
+        </button>
+        <button
+          ref={listBtnRef}
+          onClick={() => handleViewToggle('list')}
+          className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+        >
+          List
+        </button>
+      </div>
+    )
+  }
 
   const wrapperClass = isMap
     ? 'absolute top-0 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
@@ -143,14 +185,16 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
               placeholder="Search..."
               onChange={(e) => handleSearchChange(e.target.value)}
               onBlur={() => setTimeout(() => { if (!query) setMobileSearchOpen(false) }, 150)}
-              className={inputClass.replace('w-48', 'w-36').replace('w-52', 'w-36')}
+              className={inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')}
             />
             <Dropdown />
           </div>
         ) : (
           <button onClick={() => setMobileSearchOpen(true)} className="cursor-pointer p-1">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isMap ? 'white' : '#374151'} strokeWidth="2">
-              <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke={isMap ? 'white' : '#374151'} strokeWidth="2">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
           </button>
         )}
