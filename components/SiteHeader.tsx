@@ -1,7 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Logo from './Logo'
+
 
 type Theater = {
   id: string; name: string; slug: string; lat: number; lng: number
@@ -23,7 +24,8 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const isMap = variant === 'map'
-  const isMapActive = pathname === '/'
+  const searchParams = useSearchParams()
+  const isMapActive = pathname === '/' && searchParams.get('view') !== 'list'
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -79,15 +81,27 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect }: 
     </ul>
   ) : null
 
-  const ViewToggle = () => (
-    <div className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 ${isMap ? 'bg-white/15 border border-white/25' : 'bg-gray-100'}`}>
-      <div className={`absolute top-0.5 bottom-0.5 w-1/2 rounded-full transition-transform duration-200 ease-out ${isMap ? 'bg-white/30' : 'bg-white shadow-sm'} ${isMapActive ? 'translate-x-0' : 'translate-x-full'}`} />
-      <button onClick={() => router.push('/')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 cursor-pointer ${isMapActive ? (isMap ? 'text-white' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}>
+   const ViewToggle = () => (
+    <div className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/25' : 'bg-gray-100 border border-gray-200'}`}
+      style={{ isolation: 'isolate' }}>
+      {/* Sliding pill */}
+      <div
+        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
+        style={{
+          transform: isMapActive ? 'translateX(2px)' : 'translateX(calc(100% + 2px))',
+          transition: 'transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}
+      />
+      <button
+        onClick={() => router.push('/?view=map')}
+        className={`relative z-10 px-3.5 py-1 rounded-full transition-colors duration-200 cursor-pointer min-w-[48px] text-center ${isMapActive ? (isMap ? 'text-gray-900' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+      >
         Map
       </button>
-      <button onClick={() => router.push('/list')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 cursor-pointer ${!isMapActive ? (isMap ? 'text-white' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}>
+      <button
+        onClick={() => router.push('/?view=list')}
+        className={`relative z-10 px-3.5 py-1 rounded-full transition-colors duration-200 cursor-pointer min-w-[48px] text-center ${!isMapActive ? (isMap ? 'text-gray-900' : 'text-gray-900') : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+      >
         List
       </button>
     </div>

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import MapView from '@/components/MapView'
+import HomeClient from '@/components/HomeClient'
 
 export const revalidate = 60
 
@@ -23,5 +23,5 @@ export default async function HomePage() {
     image_path: t.images?.find((i: any) => i.is_featured)?.storage_path ?? t.images?.[0]?.storage_path ?? null,
   }))
 
-  return <MapView theaters={mapped} />
+  return <HomeClient theaters={mapped} />
 }
