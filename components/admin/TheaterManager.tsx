@@ -7,10 +7,11 @@ import RichTextEditor from './RichTextEditor'
 
 const emptyForm = {
   name: '', slug: '', description: '', address: '', city: '', country: '',
-  lat: 0, lng: 0, year_opened: null as number | null, year_closed: null as number | null,
-  nearest_theater_name: '', nearest_theater_address: '', nearest_theater_lat: null as number | null, nearest_theater_lng: null as number | null,
-  status: 'draft', source_id: null as string | null,
+  lat: 0, lng: 0, year_opened: null, year_closed: null,
+  nearest_theater_name: '', nearest_theater_address: '', nearest_theater_lat: null, nearest_theater_lng: null,
+  status: 'draft',
 }
+
 
 export default function TheaterManager() {
   const supabase = createClient()
@@ -36,6 +37,8 @@ export default function TheaterManager() {
     loadTheaters()
        supabase.from('sources').select('id, name').order('name').then(({ data }: { data: any }) => setSources(data ?? []))
   }, [])
+
+  
 
   function update(key: string, value: any) {
     setForm((f) => ({ ...f, [key]: value }))

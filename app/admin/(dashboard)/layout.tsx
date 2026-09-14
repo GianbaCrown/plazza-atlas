@@ -8,6 +8,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/admin" className="font-bold">Admin</Link>
         <Link href="/admin/theaters">Theaters</Link>
         <Link href="/admin/submissions">Submissions</Link>
+        <Link href="/admin/sources">Sources</Link>
         <div className="flex-1" />
         <LogoutButton />
       </nav>
