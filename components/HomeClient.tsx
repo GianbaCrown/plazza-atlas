@@ -153,10 +153,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         if (c.properties.cluster) {
           el.textContent = String(c.properties.point_count)
           el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
-          el.onclick = () => {
-            const nextZoom = Math.min(zoom + 4, 14)
-            map.easeTo({ center: [lng, lat], zoom: nextZoom, duration: 500 })
-          }
+                    el.onclick = () => map.easeTo({ center: [lng, lat], zoom: zoom + 2, duration: 400 })
         } else {
           el.style.cssText = 'background:#c8a96e;width:14px;height:14px;border-radius:50%;border:2px solid #1a1a2e;cursor:pointer;'
           const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
@@ -179,27 +176,11 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       })
     }
 
-    function autoPopupIfSingle() {
-      const bounds = map.getBounds()
-      const bbox: [number, number, number, number] = [
-        bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()
-      ]
-      const zoom = Math.floor(map.getZoom())
-      if (zoom < 10) return
-      const visible = index.getClusters(bbox, zoom).filter((c: any) => !c.properties.cluster)
-      if (visible.length === 1) {
-        const c = visible[0] as any
-        const [lng, lat] = c.geometry.coordinates
-        const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
-        if (theater && popupRef.current && !popupRef.current.isOpen()) {
-          popupRef.current.setLngLat([lng, lat]).setHTML(richPopupHTML(theater)).addTo(map)
-        }
-      }
-    }
+
 
     map.on('load', renderClusters)
     map.on('moveend', renderClusters)
-    map.on('moveend', autoPopupIfSingle)
+
 
 
     map.on('load', renderClusters)
@@ -222,8 +203,23 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     }
   }, [view])
 
-  const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))]
+  // Countries for filter — inside the component, before the return
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedDecade, setSelectedDecade] = useState('')
+
+  const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))].sort()
   const decades = Array.from({ length: 13 }, (_, i) => 1900 + i * 10)
+
+  const filteredTheaters = theaters.filter((t) => {
+    if (selectedCountry && t.country !== selectedCountry) return false
+    if (selectedDecade) {
+      const decade = Number(selectedDecade)
+      const opened = t.year_opened ?? 0
+      const closed = t.year_closed ?? 9999
+      if (opened > decade + 9 || closed < decade) return false
+    }
+    return true
+  })
   const isMap = view === 'map'
 
   return (
@@ -238,7 +234,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       </div>
 
       {/* List view */}
-      <div style={{
+            <div style={{
         position: 'absolute', inset: 0,
         opacity: isMap ? 0 : 1,
         pointerEvents: isMap ? 'none' : 'auto',
@@ -249,17 +245,25 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         <div className="pb-20 pt-16">
           <div className="max-w-6xl mx-auto px-4 py-6">
             <div className="flex gap-3 mb-6 flex-wrap">
-              <select className="border rounded-lg px-3 py-2 text-sm cursor-pointer">
+              <select
+                className="border rounded-lg px-3 py-2 text-sm cursor-pointer"
+                value={selectedCountry}
+                onChange={(e) => setSelectedCountry(e.target.value)}
+              >
                 <option value="">All countries</option>
                 {countries.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
-              <select className="border rounded-lg px-3 py-2 text-sm cursor-pointer">
+              <select
+                className="border rounded-lg px-3 py-2 text-sm cursor-pointer"
+                value={selectedDecade}
+                onChange={(e) => setSelectedDecade(e.target.value)}
+              >
                 <option value="">All decades</option>
-                {decades.map((d) => <option key={d} value={d}>{d}s</option>)}
+                {decades.map((d) => <option key={d} value={String(d)}>{d}s</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {theaters.map((t) => (
+              {filteredTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer">
                   <div className="aspect-[3/4] relative bg-gray-200 rounded-xl overflow-hidden">
                     {t.image_path && (
@@ -274,6 +278,9 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
                   <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
                 </Link>
               ))}
+              {filteredTheaters.length === 0 && (
+                <p className="text-gray-400 col-span-4 py-8">No theaters match this filter.</p>
+              )}
             </div>
           </div>
         </div>
