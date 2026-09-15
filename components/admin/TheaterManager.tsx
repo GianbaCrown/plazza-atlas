@@ -9,7 +9,7 @@ const emptyForm = {
   name: '', slug: '', description: '', address: '', city: '', country: '',
   lat: 0, lng: 0, year_opened: null as number | null, year_closed: null as number | null,
   nearest_theater_name: '', nearest_theater_address: '', nearest_theater_lat: null as number | null, nearest_theater_lng: null as number | null,
-  status: 'draft', source_id: null as string | null,
+    status: 'draft', source_id: null as string | null, source_url: '' as string,
 }
 
 
@@ -84,6 +84,7 @@ export default function TheaterManager() {
       nearest_theater_lng: form.nearest_theater_lng,
       status: form.status,
       source_id: form.source_id || null,
+      source_url: form.source_url || null,
     }
 
     if (!editingId) {
@@ -256,17 +257,24 @@ export default function TheaterManager() {
                   </div>
 
               {/* Source */}
-              <div>
-                <label className="text-sm font-medium text-gray-700">Source</label>
-                <select
-                  value={form.source_id ?? ''}
-                  onChange={(e) => update('source_id', e.target.value || null)}
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                >
-                  <option value="">No source</option>
-                  {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
-              </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Source (optional)</label>
+                    <select value={form.source_id ?? ''} onChange={(e) => update('source_id', e.target.value || null)}
+                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                      <option value="">No source</option>
+                      {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Source URL (optional)</label>
+                    <input
+                      value={form.source_url ?? ''}
+                      onChange={(e) => update('source_url', e.target.value)}
+                      placeholder="https://..."
+                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
 
               {/* Status */}
               <div>

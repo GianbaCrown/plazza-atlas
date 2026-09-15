@@ -100,12 +100,29 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       }
     })
 
-    if (theaters.length > 0) {
-      const bounds = new maplibregl.LngLatBounds()
-      theaters.forEach((t) => bounds.extend([t.lng, t.lat]))
-      map.fitBounds(bounds, { padding: 80, maxZoom: 8, duration: 0 })
-    }
+       if (theaters.length > 0) {
+      // Find densest area using a grid approach
+      function findDenseCenter(theaters: Theater[]) {
+        const gridSize = 8 // degrees
+        const counts: Record<string, { count: number; lats: number[]; lngs: number[] }> = {}
+        theaters.forEach((t) => {
+          const key = `${Math.floor(t.lat / gridSize)},${Math.floor(t.lng / gridSize)}`
+          if (!counts[key]) counts[key] = { count: 0, lats: [], lngs: [] }
+          counts[key].count++
+          counts[key].lats.push(t.lat)
+          counts[key].lngs.push(t.lng)
+        })
+        const densest = Object.values(counts).sort((a, b) => b.count - a.count)[0]
+        const avgLat = densest.lats.reduce((a, b) => a + b, 0) / densest.lats.length
+        const avgLng = densest.lngs.reduce((a, b) => a + b, 0) / densest.lngs.length
+        return { lat: avgLat, lng: avgLng, count: densest.count }
+      }
 
+      const dense = findDenseCenter(theaters)
+      const zoom = dense.count >= 5 ? 6 : dense.count >= 3 ? 5 : 4
+      map.setCenter([dense.lng, dense.lat])
+      map.setZoom(zoom)
+    }
     const index = new Supercluster({ radius: 60, maxZoom: 16 })
     index.load(theaters.map((t) => ({
       type: 'Feature',
@@ -136,7 +153,10 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         if (c.properties.cluster) {
           el.textContent = String(c.properties.point_count)
           el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
-          el.onclick = () => map.easeTo({ center: [lng, lat], zoom: zoom + 2 })
+          el.onclick = () => {
+            const nextZoom = Math.min(zoom + 4, 14)
+            map.easeTo({ center: [lng, lat], zoom: nextZoom, duration: 500 })
+          }
         } else {
           el.style.cssText = 'background:#c8a96e;width:14px;height:14px;border-radius:50%;border:2px solid #1a1a2e;cursor:pointer;'
           const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
@@ -158,6 +178,29 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         markersOnScreen.push(new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map))
       })
     }
+
+    function autoPopupIfSingle() {
+      const bounds = map.getBounds()
+      const bbox: [number, number, number, number] = [
+        bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()
+      ]
+      const zoom = Math.floor(map.getZoom())
+      if (zoom < 10) return
+      const visible = index.getClusters(bbox, zoom).filter((c: any) => !c.properties.cluster)
+      if (visible.length === 1) {
+        const c = visible[0] as any
+        const [lng, lat] = c.geometry.coordinates
+        const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
+        if (theater && popupRef.current && !popupRef.current.isOpen()) {
+          popupRef.current.setLngLat([lng, lat]).setHTML(richPopupHTML(theater)).addTo(map)
+        }
+      }
+    }
+
+    map.on('load', renderClusters)
+    map.on('moveend', renderClusters)
+    map.on('moveend', autoPopupIfSingle)
+
 
     map.on('load', renderClusters)
     map.on('moveend', renderClusters)

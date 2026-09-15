@@ -2,34 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import TheaterImageBlock from './TheaterImageBlock'
 
-function MovieGrid({ movies }: { movies: any[] }) {
-  if (!movies?.length) return null
-  return (
-    <div className="mt-4">
-      <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Films on the marquee</p>
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-        {movies.map((im: any, i: number) => (
-          <div key={i} className="text-center">
-            {im.movies.poster_path ? (
-              <img
-                src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
-                className="w-full aspect-[2/3] object-cover rounded-lg shadow-md"
-                alt={im.movies.title}
-              />
-            ) : (
-              <div className="w-full aspect-[2/3] bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
-                No poster
-              </div>
-            )}
-            <p className="text-xs mt-1.5 font-medium leading-tight line-clamp-2">{im.movies.title}</p>
-            {im.movies.year && <p className="text-xs text-gray-400">{im.movies.year}</p>}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 export default function TheaterModal({ slug }: { slug: string }) {
   const router = useRouter()
@@ -46,7 +20,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
     const supabase = createClient()
     supabase
       .from('theaters')
-      .select(`*, sources ( id, name, url, image_path ), images ( id, storage_path, caption, credit, is_featured, sort_order, image_movies ( movies ( title, year, poster_path ) ) )`)
+      .select(`*, sources ( id, name, url, image_path ), images ( id, storage_path, caption, credit, is_featured, sort_order, image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) ) )`)
       .eq('slug', slug)
       .eq('status', 'published')
       .single()
@@ -117,21 +91,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
               </p>
 
               {images.map((img: any) => (
-                <figure key={img.id} className="mb-8">
-                  <div className="bg-gray-100 rounded-xl overflow-hidden">
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/theater-images/${img.storage_path}`}
-                      alt={img.caption ?? theater.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {(img.caption || img.credit) && (
-                    <figcaption className="text-xs text-gray-400 mt-2">
-                      {img.caption} {img.credit && <span className="italic">· {img.credit}</span>}
-                    </figcaption>
-                  )}
-                  <MovieGrid movies={img.image_movies} />
-                </figure>
+                <TheaterImageBlock key={img.id} img={img} theaterName={theater.name} size="modal" />
               ))}
 
               {theater.description && (
@@ -147,23 +107,29 @@ export default function TheaterModal({ slug }: { slug: string }) {
                 </div>
               )}
 
-              {theater.sources && (
+                            {(theater.sources || theater.source_url) && (
                 <div className="border-t pt-5 mt-5 flex items-center gap-3">
-                  {theater.sources.image_path && (
+                  {theater.sources?.image_path && (
                     <img
                       src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/source-images/${theater.sources.image_path}`}
-                      className="w-8 h-8 object-cover rounded" alt={theater.sources.name}
+                      className="w-8 h-8 object-cover rounded" alt={theater.sources?.name}
                     />
                   )}
                   <div>
                     <p className="text-xs text-gray-400">Source</p>
-                    {theater.sources.url
-                      ? <a href={theater.sources.url} target="_blank" rel="noopener noreferrer"
-                          className="text-sm font-medium text-amber-600 hover:underline cursor-pointer">
-                          {theater.sources.name}
-                        </a>
-                      : <p className="text-sm font-medium">{theater.sources.name}</p>
-                    }
+                    {theater.source_url ? (
+                      <a href={theater.source_url} target="_blank" rel="noopener noreferrer"
+                        className="text-sm font-medium text-amber-600 hover:underline cursor-pointer">
+                        {theater.sources?.name ?? theater.source_url}
+                      </a>
+                    ) : theater.sources?.url ? (
+                      <a href={theater.sources.url} target="_blank" rel="noopener noreferrer"
+                        className="text-sm font-medium text-amber-600 hover:underline cursor-pointer">
+                        {theater.sources.name}
+                      </a>
+                    ) : (
+                      <p className="text-sm font-medium">{theater.sources?.name}</p>
+                    )}
                   </div>
                 </div>
               )}
