@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import ImageLightbox from './ImageLightbox'
 import MovieOverlay from './MovieOverlay'
 
@@ -41,6 +41,7 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null)
+  const prefetchCache = useRef<Record<number, any>>({})
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)')
@@ -50,7 +51,20 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  const gridCols = 'grid-cols-3 sm:grid-cols-4'
+  const prefetch = useCallback((tmdbId: number) => {
+    if (!tmdbId || prefetchCache.current[tmdbId]) return
+    fetch(`/api/tmdb/movie?id=${tmdbId}`)
+      .then((r) => r.json())
+      .then((data) => { prefetchCache.current[tmdbId] = data })
+      .catch(() => {})
+  }, [])
+
+  function handleMovieClick(movie: any) {
+    setSelectedMovie({
+      ...movie,
+      prefetched: movie.tmdb_id ? prefetchCache.current[movie.tmdb_id] ?? null : null,
+    })
+  }
 
   return (
     <figure className="mb-8">
@@ -69,7 +83,6 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
           className="w-full h-full object-cover"
         />
 
-        {/* Mobile zoom button — always visible */}
         {isMobile && (
           <button
             onClick={() => setLightboxOpen(true)}
@@ -97,43 +110,30 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
             Films on the marquee
           </p>
-          <div className={`grid ${gridCols} gap-3`}>
-            {img.image_movies.map((im, i) => {
-              const tmdbUrl = im.movies.tmdb_id
-                ? `https://www.themoviedb.org/movie/${im.movies.tmdb_id}`
-                : null
-              const content = (
-                <div className="text-center">
-                  {im.movies.poster_path ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
-                      className="w-full aspect-[2/3] object-cover rounded-lg shadow-md transition hover:opacity-80 hover:shadow-lg"
-                      alt={im.movies.title}
-                    />
-                  ) : (
-                    <div className="w-full aspect-[2/3] bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
-                      No poster
-                    </div>
-                  )}
-                  <p className="text-xs mt-1.5 font-medium leading-tight line-clamp-2">
-                    {im.movies.title}
-                  </p>
-                  {im.movies.year && (
-                    <p className="text-xs text-gray-400">{im.movies.year}</p>
-                  )}
-                </div>
-              )
-                return (
-                <div
-                  key={i}
-                  className="cursor-pointer"
-                  onClick={() => setSelectedMovie(im.movies)}
-                >
-                  {content}
-                </div>
-              )
-            })}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {img.image_movies.map((im, i) => (
+              <div
+                key={i}
+                className="text-center cursor-pointer"
+                onMouseEnter={() => im.movies.tmdb_id && prefetch(im.movies.tmdb_id)}
+                onClick={() => handleMovieClick(im.movies)}
+              >
+                {im.movies.poster_path ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
+                    className="w-full aspect-[2/3] object-cover rounded-lg shadow-md transition hover:opacity-80 hover:shadow-lg"
+                    alt={im.movies.title}
+                  />
+                ) : (
+                  <div className="w-full aspect-[2/3] bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
+                    No poster
+                  </div>
+                )}
+                <p className="text-xs mt-1.5 font-medium leading-tight line-clamp-2">{im.movies.title}</p>
+                {im.movies.year && <p className="text-xs text-gray-400">{im.movies.year}</p>}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -146,9 +146,10 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
         />
       )}
 
-            {selectedMovie && (
+      {selectedMovie && (
         <MovieOverlay
           movie={selectedMovie}
+          prefetched={selectedMovie.prefetched}
           onClose={() => setSelectedMovie(null)}
         />
       )}

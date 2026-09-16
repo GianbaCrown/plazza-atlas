@@ -186,10 +186,15 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     map.on('load', renderClusters)
     map.on('moveend', renderClusters)
 
-    const resizeObserver = new ResizeObserver(() => map.resize())
+      let resizeTimer: ReturnType<typeof setTimeout>
+    const resizeObserver = new ResizeObserver(() => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => map.resize(), 100)
+    })
     resizeObserver.observe(mapContainer.current)
 
-    return () => {
+       return () => {
+      clearTimeout(resizeTimer)
       resizeObserver.disconnect()
       map.remove()
       mapRef.current = null
@@ -223,14 +228,26 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const isMap = view === 'map'
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+   
+     <div className="relative w-screen h-screen overflow-hidden">
       {/* Map — always mounted */}
-      <div style={{
+                  <div style={{
         position: 'absolute', inset: 0,
-        visibility: isMap ? 'visible' : 'hidden',
+        opacity: isMap ? 1 : 0,
         pointerEvents: isMap ? 'auto' : 'none',
+        transition: 'opacity 150ms ease',
+        willChange: 'opacity',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
       }}>
-        <div ref={mapContainer} style={{ position: 'absolute', inset: 0 }} />
+        <div
+          ref={mapContainer}
+          style={{
+            position: 'absolute', inset: 0,
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+          }}
+        />
       </div>
 
       {/* List view */}
