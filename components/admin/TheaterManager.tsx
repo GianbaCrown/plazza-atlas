@@ -235,25 +235,25 @@ export default function TheaterManager() {
               </div>
 
               {/* Nearest theater */}
-                               <div>
+                                           <div>
                     <label className="text-sm font-medium text-gray-700">Nearest theater today</label>
-                    <input
-                      value={form.nearest_theater_name ?? ''}
-                      onChange={(e) => update('nearest_theater_name', e.target.value)}
-                      placeholder="Theater name (e.g. Cinéma Le Rex)"
-                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    />
-                    <div className="mt-2">
+                    <div className="mt-1">
                       <LocationSearch
-                        defaultValue={form.nearest_theater_address}
-                        placeholder="Search address..."
+                        defaultValue={form.nearest_theater_name || form.nearest_theater_address}
+                        placeholder="Search by name or address (e.g. Grand Rex)..."
                         onSelect={(r) => {
+                          update('nearest_theater_name', r.display_name.split(',')[0].trim())
                           update('nearest_theater_address', r.display_name)
                           update('nearest_theater_lat', r.lat)
                           update('nearest_theater_lng', r.lng)
                         }}
                       />
                     </div>
+                    {form.nearest_theater_name && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {form.nearest_theater_name} · {form.nearest_theater_address}
+                      </p>
+                    )}
                   </div>
 
               {/* Source */}

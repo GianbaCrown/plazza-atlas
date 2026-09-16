@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import ImageLightbox from './ImageLightbox'
+import MovieOverlay from './MovieOverlay'
 
 type Movie = {
   title: string
@@ -39,6 +40,7 @@ function supabaseImageUrl(path: string, width?: number) {
 export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: Props) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [selectedMovie, setSelectedMovie] = useState<any | null>(null)
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)')
@@ -122,12 +124,14 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
                   )}
                 </div>
               )
-              return tmdbUrl ? (
-                <a key={i} href={tmdbUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
+                return (
+                <div
+                  key={i}
+                  className="cursor-pointer"
+                  onClick={() => setSelectedMovie(im.movies)}
+                >
                   {content}
-                </a>
-              ) : (
-                <div key={i}>{content}</div>
+                </div>
               )
             })}
           </div>
@@ -139,6 +143,13 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
           src={supabaseImageUrl(img.storage_path)}
           alt={img.caption ?? theaterName}
           onClose={() => setLightboxOpen(false)}
+        />
+      )}
+
+            {selectedMovie && (
+        <MovieOverlay
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
         />
       )}
     </figure>
