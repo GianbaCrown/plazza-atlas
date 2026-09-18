@@ -9,7 +9,7 @@ const emptyForm = {
   name: '', slug: '', description: '', address: '', city: '', country: '',
   lat: 0, lng: 0, year_opened: null as number | null, year_closed: null as number | null,
   nearest_theater_name: '', nearest_theater_address: '', nearest_theater_lat: null as number | null, nearest_theater_lng: null as number | null,
-    status: 'draft', source_id: null as string | null, source_url: '' as string,
+  status: 'draft', source_id: null as string | null, source_url: '' as string, is_open: false as boolean,
 }
 
 
@@ -44,8 +44,15 @@ export default function TheaterManager() {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
-  function slugify(text: string) {
-    return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+   function slugify(...parts: (string | null | undefined)[]) {
+    return parts
+      .filter(Boolean)
+      .join('-')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
   }
 
   function openNew() {
@@ -85,6 +92,7 @@ export default function TheaterManager() {
       status: form.status,
       source_id: form.source_id || null,
       source_url: form.source_url || null,
+      is_open: form.is_open ?? false,
     }
 
     if (!editingId) {
@@ -92,13 +100,51 @@ export default function TheaterManager() {
       const { error } = await supabase.from('theaters').insert({ id: pendingId, ...payload })
       if (error) { alert(error.message); setSaving(false); return }
 
-      // Insert pending images
+           // Insert pending images + their movie links
       if (pendingImages.length > 0) {
-        const records = pendingImages.map(({ id: _tempId, image_movies: _im, ...rest }) => ({
-          ...rest,
-          theater_id: pendingId,
-        }))
-        await supabase.from('images').insert(records)
+        for (const img of pendingImages) {
+          const { image_movies, id: tempId, ...rest } = img
+          const { data: insertedImg, error: imgError } = await supabase
+            .from('images')
+            .insert({ ...rest, theater_id: pendingId })
+            .select('id')
+            .single()
+          if (imgError || !insertedImg) continue
+
+          // For each movie linked to this image, upsert the movie then link it
+          if (image_movies && image_movies.length > 0) {
+            for (const im of image_movies) {
+              const movie = im.movies
+              if (!movie) continue
+              let movieId = im.movie_id
+
+              // If movie_id looks like a UUID it's already in DB; if numeric it's a TMDB id from pending state
+              const looksLikeUUID = /^[0-9a-f-]{36}$/.test(String(movieId))
+              if (!looksLikeUUID && movie.tmdb_id) {
+                const { data: existing } = await supabase
+                  .from('movies')
+                  .select('id')
+                  .eq('tmdb_id', movie.tmdb_id)
+                  .maybeSingle()
+                if (existing) {
+                  movieId = existing.id
+                } else {
+                  const { data: created } = await supabase
+                    .from('movies')
+                    .insert({ tmdb_id: movie.tmdb_id, title: movie.title, year: movie.year ? Number(movie.year) : null, poster_path: movie.poster_path })
+                    .select('id')
+                    .single()
+                  if (created) movieId = created.id
+                }
+              }
+              if (movieId && looksLikeUUID) {
+                await supabase.from('image_movies').insert({ image_id: insertedImg.id, movie_id: movieId })
+              } else if (movieId) {
+                await supabase.from('image_movies').insert({ image_id: insertedImg.id, movie_id: movieId })
+              }
+            }
+          }
+        }
       }
 
       setSaving(false)
@@ -168,8 +214,10 @@ export default function TheaterManager() {
                 <label className="text-sm font-medium text-gray-700">Name *</label>
                 <input
                   value={form.name}
-                  onChange={(e) => { update('name', e.target.value); if (isNew) update('slug', slugify(e.target.value)) }}
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  onChange={(e) => {
+                    update('name', e.target.value)
+                    if (isNew) update('slug', slugify(e.target.value, form.city, form.country))
+                  }}                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
@@ -201,12 +249,13 @@ export default function TheaterManager() {
                     defaultValue={form.address}
                     placeholder="Search the theater's address..."
                     onSelect={(r) => {
-                      update('address', r.display_name)
-                      update('city', r.city)
-                      update('country', r.country)
-                      update('lat', r.lat)
-                      update('lng', r.lng)
-                    }}
+                          update('address', r.display_name)
+                          update('city', r.city)
+                          update('country', r.country)
+                          update('lat', r.lat)
+                          update('lng', r.lng)
+                          if (isNew) update('slug', slugify(form.name, r.city, r.country))
+                        }}
                   />
                 </div>
                 {form.lat !== 0 && <p className="text-xs text-gray-400 mt-1">{form.city}, {form.country}</p>}
@@ -233,6 +282,19 @@ export default function TheaterManager() {
                   />
                 </div>
               </div>
+
+                                <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="is_open"
+                      checked={form.is_open ?? false}
+                      onChange={(e) => update('is_open', e.target.checked)}
+                      className="w-4 h-4 accent-amber-600 cursor-pointer"
+                    />
+                    <label htmlFor="is_open" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      This theater is still open today
+                    </label>
+                  </div>
 
               {/* Nearest theater */}
                                            <div>
@@ -275,6 +337,8 @@ export default function TheaterManager() {
                       className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
+
+                  
 
               {/* Status */}
               <div>

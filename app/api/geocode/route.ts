@@ -4,8 +4,8 @@ function formatResult(r: any) {
   const a = r.address || {}
   const parts: string[] = []
 
-  if (a.house_number && a.road) parts.push(`${a.house_number} ${a.road}`)
-  else if (a.road) parts.push(a.road)
+  const road = [a.house_number, a.road].filter(Boolean).join(' ')
+  if (road) parts.push(road)
 
   const city = a.city || a.town || a.village || a.municipality || a.county || ''
   if (city) parts.push(city)

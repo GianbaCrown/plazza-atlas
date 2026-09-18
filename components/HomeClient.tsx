@@ -39,7 +39,15 @@ function richPopupHTML(t: Theater) {
   const img = imageUrl(t.image_path)
   return `
     <div style="font-family:sans-serif;min-width:200px">
-      ${img ? `<img src="${img}" style="width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:8px"/>` : ''}
+      ${img ? `
+        <div style="width:100%;height:110px;background:#1a1a2e;border-radius:6px;margin-bottom:8px;overflow:hidden;flex-shrink:0">
+          <img
+            src="${img}"
+            style="width:100%;height:110px;object-fit:cover;border-radius:6px;display:block;opacity:0;transition:opacity 0.3s ease"
+            onload="this.style.opacity=1"
+          />
+        </div>
+      ` : ''}
       <p style="font-weight:600;margin:0 0 2px;color:#1a1a2e">${t.name}</p>
       <p style="font-size:12px;color:#888;margin:0 0 2px">${t.city ?? ''}${t.city && t.country ? ', ' : ''}${t.country ?? ''}</p>
       <p style="font-size:12px;color:#888;margin:0 0 8px">${dateRange(t)}</p>
@@ -50,7 +58,17 @@ function richPopupHTML(t: Theater) {
 
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const router = useRouter()
-  const [view, setView] = useState<'map' | 'list'>('map')
+    const [view, setView] = useState<'map' | 'list'>('map')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('plazza_view') as 'map' | 'list' | null
+    if (saved === 'list') setView('list')
+  }, [])
+
+  function changeView(v: 'map' | 'list') {
+    setView(v)
+    localStorage.setItem('plazza_view', v)
+  }
 
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -79,16 +97,24 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return
 
-    const map = new maplibregl.Map({
+      const map = new maplibregl.Map({
       container: mapContainer.current,
       style: `https://api.protomaps.com/styles/v5/dark/en.json?key=${process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY}`,
       center: [10, 50],
       zoom: 3.5,
+      transformRequest: (url) => {
+        return { url }
+      },
+    })
+
+    // Suppress tile 504 errors from console — these are transient server timeouts
+    map.on('error', (e) => {
+      if (e?.error?.message?.includes('504') || e?.error?.status === 504) return
+      if (e?.error?.message?.includes('AJAXError')) return
     })
 
     mapRef.current = map
-    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 16 })
-
+    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: false, offset: 16 })
     popupRef.current.on('open', () => {
       const el = popupRef.current!.getElement()
       const link = el.querySelector('[data-theater-link]') as HTMLAnchorElement | null
@@ -132,7 +158,11 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
     const markersOnScreen: maplibregl.Marker[] = []
     const closeTimeoutRef = { current: undefined as ReturnType<typeof setTimeout> | undefined }
+    let preventMapClose = false
 
+    map.on('click', () => {
+      if (!preventMapClose) popupRef.current?.remove()
+    })
     function scheduleClose() {
       closeTimeoutRef.current = setTimeout(() => popupRef.current?.remove(), 350)
     }
@@ -160,16 +190,23 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           el.onmouseenter = () => {
             if (!theater) return
             clearTimeout(closeTimeoutRef.current)
+            // Preload image so it's cached when rich popup opens
+            if (theater.image_path) {
+              const preload = new Image()
+              preload.src = imageUrl(theater.image_path)!
+            }
             popupRef.current!.setLngLat([lng, lat]).setHTML(hoverPopupHTML(theater)).addTo(map)
             const popupEl = popupRef.current!.getElement()
             popupEl.onmouseenter = () => clearTimeout(closeTimeoutRef.current)
             popupEl.onmouseleave = scheduleClose
           }
           el.onmouseleave = scheduleClose
-          el.onclick = () => {
+                   el.onclick = () => {
             if (!theater) return
             clearTimeout(closeTimeoutRef.current)
+            preventMapClose = true
             popupRef.current!.setLngLat([lng, lat]).setHTML(richPopupHTML(theater)).addTo(map)
+            setTimeout(() => { preventMapClose = false }, 100)
           }
         }
         markersOnScreen.push(new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map))
@@ -310,7 +347,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           theaters={theaters}
           onTheaterSelect={flyToTheater}
           view={view}
-          onViewChange={setView}
+          onViewChange={changeView}
         />
       </div>
     </div>

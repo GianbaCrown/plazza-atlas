@@ -155,7 +155,13 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
 
   return (
     <div className={wrapperClass}>
-      <Logo variant={isMap ? 'light' : 'dark'} />
+            <span
+        onClick={() => {
+          if (typeof window !== 'undefined') localStorage.setItem('plazza_view', 'map')
+        }}
+      >
+        <Logo variant={isMap ? 'light' : 'dark'} />
+      </span>
       <div className="flex-1" />
 
       {/* Desktop */}

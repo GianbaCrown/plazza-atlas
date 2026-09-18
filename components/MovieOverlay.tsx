@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type Movie = {
   title: string
@@ -27,8 +28,10 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   const [full, setFull] = useState<FullMovie | null>(prefetched ?? null)
   const [loading, setLoading] = useState(!prefetched)
   const [visible, setVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     requestAnimationFrame(() => setVisible(true))
 
     if (!prefetched && movie.tmdb_id) {
@@ -47,7 +50,6 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
     }
     document.addEventListener('keydown', handleKey)
 
-    // Lock all scrollable elements
     const scrollables = Array.from(document.querySelectorAll<HTMLElement>('*')).filter((el) => {
       const s = window.getComputedStyle(el)
       return s.overflowY === 'auto' || s.overflowY === 'scroll'
@@ -82,7 +84,9 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   const year = full?.year ?? movie.year
   const tmdbUrl = movie.tmdb_id ? `https://www.themoviedb.org/movie/${movie.tmdb_id}` : null
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center px-4"
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 200ms ease', touchAction: 'none' }}
@@ -91,78 +95,84 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={handleClose} />
 
       <div
-        className="relative z-10 bg-[#111] rounded-2xl overflow-hidden shadow-2xl flex flex-col sm:flex-row w-full max-w-lg"
-        style={{ transform: visible ? 'scale(1)' : 'scale(0.96)', transition: 'transform 200ms ease' }}
+        className="relative z-10 bg-[#111] rounded-2xl overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
+        style={{
+          transform: visible ? 'scale(1)' : 'scale(0.96)',
+          transition: 'transform 200ms ease',
+        }}
         onClick={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
-        {/* Poster */}
-        <div className="flex-shrink-0 w-full sm:w-40">
+        {/* Poster — left, full height, fixed width */}
+        <div className="w-36 flex-shrink-0 bg-black self-stretch">
           {poster ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={`https://image.tmdb.org/t/p/w342${poster}`}
               alt={title}
-              className="w-full sm:h-full object-cover"
-              style={{ maxHeight: '220px' }}
+              className="w-full h-full object-cover"
+              style={{ minHeight: '200px' }}
             />
           ) : (
-            <div className="w-full h-40 sm:h-full bg-white/5 flex items-center justify-center text-white/20 text-xs">
+            <div className="w-full h-full min-h-[200px] flex items-center justify-center text-white/20 text-xs">
               No poster
             </div>
           )}
         </div>
 
-        {/* Info */}
-        <div className="flex-1 p-5 flex flex-col gap-3 min-w-0">
-          <div>
-            <h2 className="text-white font-bold text-lg leading-tight">{title}</h2>
-            <p className="text-white/50 text-sm mt-0.5">
-              {year}{full?.director && ` · ${full.director}`}
+        {/* Info — right, left-aligned */}
+        <div className="flex-1 p-4 flex flex-col gap-2.5 min-w-0">
+          <div className="pr-5">
+            <h2 className="text-white font-bold text-sm leading-snug">{title}</h2>
+            <p className="text-white/50 text-xs mt-0.5 flex items-center gap-1 flex-wrap">
+              {year}
+              {(full?.director || loading) && <span className="text-white/20">·</span>}
+              {full?.director && <span>{full.director}</span>}
+              {loading && !full?.director && (
+                <span className="inline-block w-20 h-2.5 bg-white/10 animate-pulse rounded" />
+              )}
             </p>
           </div>
 
-          {loading ? (
-            <div className="flex gap-1.5 items-center text-white/30 text-sm">
-              <span className="animate-pulse">···</span>
-            </div>
-          ) : full?.overview ? (
-            <p className="text-white/70 text-sm leading-relaxed line-clamp-6">{full.overview}</p>
-          ) : (
-            <p className="text-white/30 text-sm italic">No synopsis available.</p>
-          )}
-
-                    <div className="flex items-center justify-between mt-auto pt-2">
-            {tmdbUrl && (
-              
-                <a href={tmdbUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-amber-400 hover:text-amber-300 text-sm transition cursor-pointer"
-              >
-                View on TMDB →
-              </a>
+          <div className="flex-1 min-h-[80px]">
+            {loading && !full?.overview ? (
+              <div className="space-y-1.5 mt-1">
+                <div className="h-2 bg-white/10 animate-pulse rounded w-full" />
+                <div className="h-2 bg-white/10 animate-pulse rounded w-11/12" />
+                <div className="h-2 bg-white/10 animate-pulse rounded w-4/5" />
+                <div className="h-2 bg-white/10 animate-pulse rounded w-3/4" />
+                <div className="h-2 bg-white/10 animate-pulse rounded w-2/3" />
+              </div>
+            ) : full?.overview ? (
+              <p className="text-white/65 text-xs leading-relaxed line-clamp-6">{full.overview}</p>
+            ) : (
+              <p className="text-white/30 text-xs italic">No synopsis available.</p>
             )}
-            {/* 
-            <button
-              onClick={handleClose}
-              className="text-white/30 hover:text-white/60 text-sm transition cursor-pointer ml-auto"
-            >
-              Close
-            </button> */}
           </div>
+
+          {tmdbUrl && (
+            
+              <a href={tmdbUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-400 hover:text-amber-300 text-xs transition cursor-pointer mt-auto pt-1"
+            >
+              View on TMDB →
+            </a>
+          )}
         </div>
 
         <button
           onClick={handleClose}
-          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition cursor-pointer"
+          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition cursor-pointer"
         >
-          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="1" y1="1" x2="13" y2="13"/>
             <line x1="13" y1="1" x2="1" y2="13"/>
           </svg>
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

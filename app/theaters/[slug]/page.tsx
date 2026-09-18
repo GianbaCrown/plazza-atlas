@@ -35,12 +35,18 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
       </div>
 
       <article className="max-w-3xl mx-auto px-4 py-8 pb-20">
-        <h1 className="text-3xl font-bold mb-1">{theater.name}</h1>
-        <p className="text-gray-500 mb-8">
-          {theater.city}, {theater.country}
-          {theater.year_opened && ` · ${theater.year_opened}`}
-          {theater.year_closed && ` – ${theater.year_closed}`}
-        </p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 pr-10">{theater.name}</h1>
+              {theater.is_open && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                  Still open today
+                </span>
+              )}
+              <p className="text-gray-500 mb-8 text-sm">
+                {theater.city}, {theater.country}
+                {theater.year_opened && ` · ${theater.year_opened}`}
+                {theater.year_closed && ` – ${theater.year_closed}`}
+              </p>
 
         {images.map((img: any) => (
           <TheaterImageBlock key={img.id} img={img} theaterName={theater.name} size="full" />
