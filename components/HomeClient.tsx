@@ -26,27 +26,17 @@ function imageUrl(path?: string | null) {
 }
 
 function hoverPopupHTML(t: Theater) {
-  return `
-    <div style="font-family:sans-serif;min-width:160px">
-      <p style="font-weight:600;margin:0 0 2px;color:#1a1a2e">${t.name}</p>
-      <p style="font-size:12px;color:#888;margin:0 0 6px">${dateRange(t)}</p>
-      <a data-theater-link="${t.slug}" href="/theaters/${t.slug}" style="font-size:13px;color:#c8a96e;text-decoration:none">View theater →</a>
-    </div>
-  `
-}
-
-function richPopupHTML(t: Theater) {
   const img = imageUrl(t.image_path)
   return `
-    <div style="font-family:sans-serif;min-width:200px">
+    <div style="font-family:sans-serif;min-width:200px;cursor:default">
       ${img ? `
-        <div style="width:100%;height:110px;background:#1a1a2e;border-radius:6px;margin-bottom:8px;overflow:hidden;flex-shrink:0">
+        <a href="/theaters/${t.slug}" data-theater-link="${t.slug}" style="display:block;width:100%;height:110px;background:#1a1a2e;border-radius:6px;margin-bottom:8px;overflow:hidden;cursor:pointer">
           <img
             src="${img}"
             style="width:100%;height:110px;object-fit:cover;border-radius:6px;display:block;opacity:0;transition:opacity 0.3s ease"
             onload="this.style.opacity=1"
           />
-        </div>
+        </a>
       ` : ''}
       <p style="font-weight:600;margin:0 0 2px;color:#1a1a2e">${t.name}</p>
       <p style="font-size:12px;color:#888;margin:0 0 2px">${t.city ?? ''}${t.city && t.country ? ', ' : ''}${t.country ?? ''}</p>
@@ -55,6 +45,8 @@ function richPopupHTML(t: Theater) {
     </div>
   `
 }
+
+
 
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const router = useRouter()
@@ -79,17 +71,12 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   useEffect(() => { theatersRef.current = theaters }, [theaters])
   useEffect(() => { routerRef.current = router }, [router])
 
-  function flyToTheater(t: Theater) {
+   function flyToTheater(t: Theater) {
     setView('map')
     const map = mapRef.current
     if (!map) return
     setTimeout(() => {
       map.resize()
-      const onMoveEnd = () => {
-        popupRef.current!.setLngLat([t.lng, t.lat]).setHTML(richPopupHTML(t)).addTo(map)
-        map.off('moveend', onMoveEnd)
-      }
-      map.on('moveend', onMoveEnd)
       map.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
     }, 50)
   }
@@ -114,16 +101,16 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     })
 
     mapRef.current = map
-    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: false, offset: 16 })
-    popupRef.current.on('open', () => {
+    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 16, maxWidth: '240px' })    
+       popupRef.current.on('open', () => {
       const el = popupRef.current!.getElement()
-      const link = el.querySelector('[data-theater-link]') as HTMLAnchorElement | null
-      if (link) {
-        link.onclick = (e) => {
+      el.querySelectorAll('[data-theater-link]').forEach((link) => {
+        const anchor = link as HTMLAnchorElement
+        anchor.onclick = (e) => {
           e.preventDefault()
-          routerRef.current.push(`/theaters/${link.dataset.theaterLink}`)
+          routerRef.current.push(`/theaters/${anchor.dataset.theaterLink}`)
         }
-      }
+      })
     })
 
        if (theaters.length > 0) {
@@ -156,16 +143,21 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       geometry: { type: 'Point', coordinates: [t.lng, t.lat] },
     })) as any)
 
-    const markersOnScreen: maplibregl.Marker[] = []
-    const closeTimeoutRef = { current: undefined as ReturnType<typeof setTimeout> | undefined }
+        const markersOnScreen: maplibregl.Marker[] = []
+    let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
+
+    function scheduleClose() {
+      closeTimer = setTimeout(() => popupRef.current?.remove(), 2000)
+    }
+
+    function cancelClose() {
+      clearTimeout(closeTimer)
+    }
 
     map.on('click', () => {
       if (!preventMapClose) popupRef.current?.remove()
     })
-    function scheduleClose() {
-      closeTimeoutRef.current = setTimeout(() => popupRef.current?.remove(), 350)
-    }
 
     function renderClusters() {
       markersOnScreen.forEach((m) => m.remove())
@@ -180,39 +172,58 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       clusters.forEach((c: any) => {
         const [lng, lat] = c.geometry.coordinates
         const el = document.createElement('div')
+
         if (c.properties.cluster) {
           el.textContent = String(c.properties.point_count)
           el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
-                    el.onclick = () => map.easeTo({ center: [lng, lat], zoom: zoom + 2, duration: 400 })
+                    el.onclick = (e) => {
+            e.stopPropagation()
+            const leaves = index.getLeaves(c.properties.cluster_id, Infinity)
+            if (leaves.length > 0) {
+              const lngs = leaves.map((l: any) => l.geometry.coordinates[0])
+              const lats = leaves.map((l: any) => l.geometry.coordinates[1])
+              const bounds = new maplibregl.LngLatBounds(
+                [Math.min(...lngs), Math.min(...lats)],
+                [Math.max(...lngs), Math.max(...lats)]
+              )
+              map.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 400 })
+            } else {
+              map.easeTo({ center: [lng, lat], zoom: zoom + 3, duration: 400 })
+            }
+          }
         } else {
           el.style.cssText = 'background:#c8a96e;width:14px;height:14px;border-radius:50%;border:2px solid #1a1a2e;cursor:pointer;'
           const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
+
           el.onmouseenter = () => {
             if (!theater) return
-            clearTimeout(closeTimeoutRef.current)
-            // Preload image so it's cached when rich popup opens
+            cancelClose()
+
+            // Preload image with native browser constructor (avoid Next.js Image conflict)
             if (theater.image_path) {
-              const preload = new Image()
-              preload.src = imageUrl(theater.image_path)!
+              const img = new window.Image()
+              img.src = imageUrl(theater.image_path)!
             }
-            popupRef.current!.setLngLat([lng, lat]).setHTML(hoverPopupHTML(theater)).addTo(map)
+
+            popupRef.current!
+              .setLngLat([lng, lat])
+              .setHTML(hoverPopupHTML(theater))
+              .addTo(map)
+
+            // Allow hovering into the popup without it closing
             const popupEl = popupRef.current!.getElement()
-            popupEl.onmouseenter = () => clearTimeout(closeTimeoutRef.current)
+            popupEl.onmouseenter = cancelClose
             popupEl.onmouseleave = scheduleClose
           }
+
           el.onmouseleave = scheduleClose
-                   el.onclick = () => {
-            if (!theater) return
-            clearTimeout(closeTimeoutRef.current)
-            preventMapClose = true
-            popupRef.current!.setLngLat([lng, lat]).setHTML(richPopupHTML(theater)).addTo(map)
-            setTimeout(() => { preventMapClose = false }, 100)
-          }
         }
-        markersOnScreen.push(new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map))
+
+        markersOnScreen.push(
+          new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
+        )
       })
     }
-
 
 
     map.on('load', renderClusters)

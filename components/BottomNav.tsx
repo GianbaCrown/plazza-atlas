@@ -1,24 +1,20 @@
 'use client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 export default function BottomNav() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
 
   async function handleRandom() {
-    setLoading(true)
+    const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     const { count } = await supabase
       .from('theaters').select('id', { count: 'exact', head: true }).eq('status', 'published')
-    if (!count) { setLoading(false); return }
+    if (!count) return
     const offset = Math.floor(Math.random() * count)
     const { data } = await supabase
       .from('theaters').select('slug').eq('status', 'published').range(offset, offset)
     if (data?.[0]) router.push(`/theaters/${data[0].slug}`)
-    setLoading(false)
   }
 
   return (
@@ -34,10 +30,9 @@ export default function BottomNav() {
         <span className="text-white/20">·</span>
         <button
           onClick={handleRandom}
-          disabled={loading}
-          className="text-white/80 hover:text-white transition px-2 py-0.5 rounded-full hover:bg-white/10 cursor-pointer disabled:opacity-40"
+          className="text-white/80 hover:text-white transition px-2 py-0.5 rounded-full hover:bg-white/10 cursor-pointer"
         >
-          {loading ? '···' : 'Random'}
+          Random
         </button>
       </div>
     </div>
