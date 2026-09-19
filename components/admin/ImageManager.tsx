@@ -40,6 +40,8 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
     })
   }
 
+       
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files?.length) return
@@ -123,10 +125,10 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
   async function addMovie(imageId: string, movie: any) {
     if (isPending) {
       // Just update local state for pending mode
-      updateLocal(imageId, {
+           updateLocal(imageId, {
         image_movies: [
           ...(images.find(i => i.id === imageId)?.image_movies ?? []),
-          { movie_id: movie.tmdb_id, movies: { id: movie.tmdb_id, title: movie.title, year: movie.year, poster_path: movie.poster_path } }
+          { movie_id: movie.tmdb_id, movies: { id: movie.tmdb_id, tmdb_id: movie.tmdb_id, title: movie.title, year: movie.year, poster_path: movie.poster_path } }
         ]
       })
       return
