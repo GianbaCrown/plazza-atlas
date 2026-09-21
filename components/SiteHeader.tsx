@@ -75,8 +75,8 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
   }
 
   const inputClass = isMap
-    ? 'w-48 px-4 py-1.5 rounded-full text-sm focus:outline-none bg-white/15 backdrop-blur-sm text-white placeholder-white/50 border border-white/25 transition'
-    : 'w-52 px-4 py-1.5 rounded-full text-sm focus:outline-none bg-gray-100 text-gray-900 placeholder-gray-400 border border-gray-200 transition'
+    ? 'w-52 px-4 py-1.5 rounded-full text-xs focus:outline-none bg-zinc-900/15 backdrop-blur-sm text-white placeholder-white/50 border border-zinc-600 transition' // MapView
+    : 'w-52 px-4 py-1.5 rounded-full text-xs font-regular focus:outline-none bg-zinc-900 text-zinc-100 placeholder-gray-400 border border-zinc-600 transition' // ListView
 
   const Dropdown = () => open && results.length > 0 ? (
     <ul className="absolute right-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-xl divide-y overflow-hidden z-30 border border-gray-100">
@@ -119,9 +119,9 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     return (
       <div
         ref={trackRef}
-        className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-gray-100 border border-gray-200'}`}
+        className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
       >
-        {/* Sliding pill */}
+        {/* Sliding pill / toggle */}
         <div
           ref={pillRef}
           className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
@@ -151,7 +151,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
 
   const wrapperClass = isMap
     ? 'absolute top-0 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
-    : 'sticky top-0 z-20 flex items-center px-4 py-3 gap-3 bg-white/95 backdrop-blur-sm border-b border-gray-100'
+    : 'sticky top-0 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-800/90 backdrop-blur-sm border-b border-zinc-600'
 
   return (
     <div className={wrapperClass}>
@@ -160,27 +160,29 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
           if (typeof window !== 'undefined') localStorage.setItem('plazza_view', 'map')
         }}
       >
-        <Logo variant={isMap ? 'light' : 'dark'} />
+        <Logo variant={isMap ? 'light' : 'light'} />
       </span>
       <div className="flex-1" />
 
-      {/* Desktop */}
-      <div className="hidden sm:flex items-center gap-2">
-        <div ref={searchRef} className="relative">
+      {/* Search Desktop */}
+            <div className="hidden sm:flex items-center gap-2">
+        <div ref={searchRef} className="relative w-52 flex-shrink-0">
           <input
             type="text"
             value={query}
             placeholder="Search theaters..."
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => results.length > 0 && setOpen(true)}
-            className={inputClass}
+            className={inputClass + ' w-full'}
           />
           <Dropdown />
         </div>
-        <ViewToggle />
+        <div className="flex-shrink-0">
+          <ViewToggle />
+        </div>
       </div>
 
-      {/* Mobile */}
+      {/* Search Mobile */}
       <div className="flex sm:hidden items-center gap-2">
         {mobileSearchOpen ? (
           <div ref={searchRef} className="relative">

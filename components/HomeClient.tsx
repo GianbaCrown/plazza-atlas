@@ -46,6 +46,83 @@ function hoverPopupHTML(t: Theater) {
   `
 }
 
+function FilterDropdown({
+  label,
+  value,
+  options,
+  onChange,
+  isMap,
+}: {
+  label: string
+  value: string
+  options: { label: string; value: string }[]
+  onChange: (v: string) => void
+  isMap: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const selected = options.find((o) => o.value === value)
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent | TouchEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('touchstart', handleOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
+  }, [])
+
+  const buttonClass = isMap
+    ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 border border-white/20 text-white/80 hover:bg-white/15 transition-colors cursor-pointer backdrop-blur-sm'
+    : 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-zinc-900 border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer'
+
+  const dropdownClass = isMap
+    ? 'absolute top-full left-0 mt-1.5 min-w-[160px] bg-zinc-900/95 backdrop-blur-md border border-zinc-700/60 rounded-xl shadow-2xl overflow-hidden z-30'
+    : 'absolute top-full left-0 mt-1.5 min-w-[160px] bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-30'
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={buttonClass}
+      >
+        <span>{selected?.label ?? label}</span>
+        <svg
+          width="10" height="10" viewBox="0 0 10 10" fill="none"
+          stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 150ms ease' }}
+        >
+          <polyline points="1,3 5,7 9,3" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className={dropdownClass}>
+          <ul className="py-1 max-h-64 overflow-y-auto">
+            {options.map((o) => (
+              <li key={o.value}>
+                <button
+                  onMouseDown={() => { onChange(o.value); setOpen(false) }}
+                  className={`w-full text-left px-4 py-2 text-xs transition-colors cursor-pointer ${
+                    o.value === value
+                      ? 'text-amber-400 bg-zinc-800'
+                      : 'text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100'
+                  }`}
+                >
+                  {o.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
 
 
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
@@ -299,38 +376,44 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       </div>
 
       {/* List view */}
-            <div style={{
+            <div 
+            className="bg-zinc-900"
+            style={{
         position: 'absolute', inset: 0,
         opacity: isMap ? 0 : 1,
         pointerEvents: isMap ? 'none' : 'auto',
         transition: 'opacity 200ms ease',
         overflowY: 'auto',
-        background: '#fafaf9',
+        // background: '#fafaf9',
       }}>
         <div className="pb-20 pt-16">
           <div className="max-w-6xl mx-auto px-4 py-6">
-            <div className="flex gap-3 mb-6 flex-wrap">
-              <select
-                className="border rounded-lg px-3 py-2 text-sm cursor-pointer"
+                        <div className="flex gap-2 mb-6 flex-wrap">
+              <FilterDropdown
+                label="All countries"
                 value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)}
-              >
-                <option value="">All countries</option>
-                {countries.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <select
-                className="border rounded-lg px-3 py-2 text-sm cursor-pointer"
+                isMap={false}
+                onChange={setSelectedCountry}
+                options={[
+                  { label: 'All countries', value: '' },
+                  ...countries.map((c) => ({ label: c, value: c })),
+                ]}
+              />
+              <FilterDropdown
+                label="All decades"
                 value={selectedDecade}
-                onChange={(e) => setSelectedDecade(e.target.value)}
-              >
-                <option value="">All decades</option>
-                {decades.map((d) => <option key={d} value={String(d)}>{d}s</option>)}
-              </select>
+                isMap={false}
+                onChange={setSelectedDecade}
+                options={[
+                  { label: 'All decades', value: '' },
+                  ...decades.map((d) => ({ label: `${d}s`, value: String(d) })),
+                ]}
+              />
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {filteredTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer">
-                  <div className="aspect-[3/4] relative bg-gray-200 rounded-xl overflow-hidden">
+                  <div className="border border-zinc-600 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
                     {t.image_path && (
                       <Image
                         src={imageUrl(t.image_path)!}
@@ -339,7 +422,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
                       />
                     )}
                   </div>
-                  <p className="mt-2 font-medium text-sm">{t.name}</p>
+                  <p className="text-white mt-2 font-medium text-sm">{t.name}</p>
                   <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
                 </Link>
               ))}

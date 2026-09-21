@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -19,7 +25,7 @@ h1, h2, h3 {
 
 /* Prevent iOS zoom on input focus */
 input, textarea, select {
-  font-size: 16px;
+  font-size: 12px;
 }
 
 /* Tiptap rich text editor content */
@@ -59,4 +65,11 @@ button, a, [role="button"] {
   .theater-modal-panel {
     height: 100% !important;
   }
+}
+
+/* Custom Shadow */
+.custom-shadow-inset {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+
 }
