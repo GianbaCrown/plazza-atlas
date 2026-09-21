@@ -336,8 +336,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   // Countries for filter — inside the component, before the return
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedDecade, setSelectedDecade] = useState('')
-
-  const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))].sort()
+  const countries = [...new Set(theaters.map((t) => t.country).filter((c): c is string => !!c))].sort()
   const decades = Array.from({ length: 13 }, (_, i) => 1900 + i * 10)
 
   const filteredTheaters = theaters.filter((t) => {
