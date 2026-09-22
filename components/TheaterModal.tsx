@@ -9,6 +9,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
   const [theater, setTheater] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const movieCache = useRef<Record<number, any>>({})
 
   const panelRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef(0)
