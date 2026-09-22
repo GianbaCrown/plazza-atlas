@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Logo from './Logo'
 
 type Theater = {
@@ -14,21 +14,21 @@ type Props = {
   onTheaterSelect?: (t: Theater) => void
   view?: 'map' | 'list'
   onViewChange?: (v: 'map' | 'list') => void
+  onLogoClick?: () => void
 }
 
-export default function SiteHeader({ variant, theaters = [], onTheaterSelect, view, onViewChange }: Props) {
+export default function SiteHeader({ variant, theaters = [], onTheaterSelect, view, onViewChange, onLogoClick }: Props) {
   const router = useRouter()
-  const pathname = usePathname()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Theater[]>([])
   const [open, setOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const isMap = variant === 'map'
-  const isHome = pathname === '/'
 
-  // For non-home pages, treat as map-inactive
-  const isMapActive = isHome ? view === 'map' : false
+  // Toggle reads ONLY from view prop — never from pathname
+  // Prevents toggle from jumping when theater modal opens and URL changes
+  const isMapActive = view !== undefined ? view === 'map' : true
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -67,16 +67,22 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
   }
 
   function handleViewToggle(v: 'map' | 'list') {
-    if (isHome && onViewChange) {
-      onViewChange(v)
+    if (onViewChange) onViewChange(v)
+    else router.push('/')
+  }
+
+  function handleLogoClick() {
+    if (onLogoClick) {
+      onLogoClick()
     } else {
       router.push('/')
     }
   }
 
+  // Your existing CSS classes preserved exactly
   const inputClass = isMap
-    ? 'w-52 px-4 py-1.5 rounded-full text-xs focus:outline-none bg-zinc-900/15 backdrop-blur-sm text-white placeholder-white/50 border border-zinc-600 transition' // MapView
-    : 'w-52 px-4 py-1.5 rounded-full text-xs font-regular focus:outline-none bg-zinc-900 text-zinc-100 placeholder-gray-400 border border-zinc-600 transition' // ListView
+    ? 'w-52 px-4 py-1.5 rounded-full text-xs focus:outline-none bg-zinc-900/15 backdrop-blur-sm text-white placeholder-white/50 border border-zinc-600 transition'
+    : 'w-52 px-4 py-1.5 rounded-full text-xs font-regular focus:outline-none bg-zinc-900 text-zinc-100 placeholder-gray-400 border border-zinc-600 transition'
 
   const Dropdown = () => open && results.length > 0 ? (
     <ul className="absolute right-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-xl divide-y overflow-hidden z-30 border border-gray-100">
@@ -106,10 +112,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
         if (!active || !track) return
         const trackRect = track.getBoundingClientRect()
         const btnRect = active.getBoundingClientRect()
-        setPillStyle({
-          width: btnRect.width,
-          left: btnRect.left - trackRect.left,
-        })
+        setPillStyle({ width: btnRect.width, left: btnRect.left - trackRect.left })
       }
       measure()
       window.addEventListener('resize', measure)
@@ -121,7 +124,6 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
         ref={trackRef}
         className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
       >
-        {/* Sliding pill / toggle */}
         <div
           ref={pillRef}
           className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
@@ -149,23 +151,21 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     )
   }
 
+  // Your existing wrapper classes preserved exactly
   const wrapperClass = isMap
     ? 'absolute top-0 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
     : 'sticky top-0 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-800/90 backdrop-blur-sm border-b border-zinc-600'
 
   return (
     <div className={wrapperClass}>
-            <span
-        onClick={() => {
-          if (typeof window !== 'undefined') localStorage.setItem('plazza_view', 'map')
-        }}
-      >
-        <Logo variant={isMap ? 'light' : 'light'} />
-      </span>
+      {/* Logo — now calls handleLogoClick instead of only setting localStorage */}
+      <button onClick={handleLogoClick} className="cursor-pointer bg-transparent border-0 p-0">
+        <Logo variant="light" />
+      </button>
       <div className="flex-1" />
 
       {/* Search Desktop */}
-            <div className="hidden sm:flex items-center gap-2">
+      <div className="hidden sm:flex items-center gap-2">
         <div ref={searchRef} className="relative w-52 flex-shrink-0">
           <input
             type="text"
@@ -194,6 +194,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
               onChange={(e) => handleSearchChange(e.target.value)}
               onBlur={() => setTimeout(() => { if (!query) setMobileSearchOpen(false) }, 150)}
               className={inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')}
+              style={{ fontSize: '16px' }} // Prevents iOS auto-zoom on focus
             />
             <Dropdown />
           </div>

@@ -28,7 +28,27 @@ export default function TheaterModal({ slug }: { slug: string }) {
       .eq('slug', slug)
       .eq('status', 'published')
       .single()
-      .then(({ data }: { data: any }) => { setTheater(data); setLoading(false) })
+      .then(({ data }: { data: any }) => {
+        setTheater(data)
+        setLoading(false)
+
+        // Prefetch all movie details in parallel as soon as theater loads
+        // so they're cached before user taps a poster
+        if (data?.images) {
+          const tmdbIds = new Set<number>()
+          data.images.forEach((img: any) => {
+            img.image_movies?.forEach((im: any) => {
+              if (im.movies?.tmdb_id) tmdbIds.add(im.movies.tmdb_id)
+            })
+          })
+          tmdbIds.forEach((id) => {
+            fetch(`/api/tmdb/movie?id=${id}`)
+              .then((r) => r.json())
+              .then((d) => { movieCache.current[id] = d })
+              .catch(() => {})
+          })
+        }
+      })
   }, [slug])
 
   function close() {
@@ -92,12 +112,11 @@ export default function TheaterModal({ slug }: { slug: string }) {
         }}
       >
 
-        {/* Drag handle — mobile */}
+       {/* Drag handle — visual only, no swipe gesture (conflicts with pull-to-refresh) */}
         <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-8 h-0.5 rounded-full bg-zinc-700" />
         </div>
 
-        {/* Close button */}
         <button
           onClick={close}
           className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-zinc-800/80 hover:bg-zinc-700/80 backdrop-blur-sm flex items-center justify-center text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"

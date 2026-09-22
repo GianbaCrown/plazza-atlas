@@ -148,15 +148,26 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   useEffect(() => { theatersRef.current = theaters }, [theaters])
   useEffect(() => { routerRef.current = router }, [router])
 
-   function flyToTheater(t: Theater) {
-    setView('map')
+     function flyToTheater(t: Theater) {
+    changeView('map')
     const map = mapRef.current
     if (!map) return
     setTimeout(() => {
       map.resize()
+      const onMoveEnd = () => {
+        if (popupRef.current) {
+          popupRef.current
+            .setLngLat([t.lng, t.lat])
+            .setHTML(hoverPopupHTML(t))
+            .addTo(map)
+        }
+        map.off('moveend', onMoveEnd)
+      }
+      map.on('moveend', onMoveEnd)
       map.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
     }, 50)
   }
+  
 
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return
@@ -435,12 +446,13 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
       {/* Header always on top */}
       <div className="absolute top-0 left-0 right-0 z-20">
-        <SiteHeader
+                <SiteHeader
           variant={isMap ? 'map' : 'page'}
           theaters={theaters}
           onTheaterSelect={flyToTheater}
           view={view}
           onViewChange={changeView}
+          onLogoClick={() => changeView('map')}
         />
       </div>
     </div>

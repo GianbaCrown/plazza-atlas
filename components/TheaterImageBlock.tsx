@@ -27,6 +27,7 @@ type Props = {
   img: ImageRecord
   theaterName: string
   size?: 'full' | 'modal'
+  movieCache?: Record<number, any>
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -37,11 +38,16 @@ function supabaseImageUrl(path: string, width?: number) {
   return base
 }
 
-export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: Props) {
+export default function TheaterImageBlock({ img, theaterName, size = 'modal', movieCache = {} }: Props) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null)
-  const prefetchCache = useRef<Record<number, any>>({})
+  const localCache = useRef<Record<number, any>>(movieCache)
+
+  // Keep local cache in sync with prop (prop is populated by TheaterModal prefetch)
+  useEffect(() => {
+    localCache.current = { ...localCache.current, ...movieCache }
+  }, [movieCache])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)')
@@ -52,23 +58,21 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
   }, [])
 
   const prefetch = useCallback((tmdbId: number) => {
-    if (!tmdbId || prefetchCache.current[tmdbId]) return
+    if (!tmdbId || localCache.current[tmdbId]) return
     fetch(`/api/tmdb/movie?id=${tmdbId}`)
       .then((r) => r.json())
-      .then((data) => { prefetchCache.current[tmdbId] = data })
+      .then((data) => { localCache.current[tmdbId] = data })
       .catch(() => {})
   }, [])
 
   function handleMovieClick(movie: any) {
-    setSelectedMovie({
-      ...movie,
-      prefetched: movie.tmdb_id ? prefetchCache.current[movie.tmdb_id] ?? null : null,
-    })
+    const prefetched = movie.tmdb_id ? localCache.current[movie.tmdb_id] ?? null : null
+    setSelectedMovie({ ...movie, prefetched })
   }
 
   return (
     <figure className="mb-8">
-      <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-[4/3]">
+      <div className="relative bg-zinc-900 rounded-lg overflow-hidden aspect-[4/3]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={supabaseImageUrl(img.storage_path, size === 'full' ? 1600 : 900)}
@@ -100,21 +104,21 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
       </div>
 
       {(img.caption || img.credit) && (
-        <figcaption className="text-xs text-gray-400 mt-2">
+        <figcaption className="text-xs text-zinc-600 mt-2">
           {img.caption} {img.credit && <span className="italic">· {img.credit}</span>}
         </figcaption>
       )}
 
       {img.image_movies && img.image_movies.length > 0 && (
         <div className="mt-4">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+          <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-700 mb-3">
             Films on the marquee
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {img.image_movies.map((im, i) => (
               <div
                 key={i}
-                className="text-center cursor-pointer"
+                className="text-center cursor-pointer group"
                 onMouseEnter={() => im.movies.tmdb_id && prefetch(im.movies.tmdb_id)}
                 onClick={() => handleMovieClick(im.movies)}
               >
@@ -122,16 +126,16 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal' }: 
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
-                    className="w-full aspect-[2/3] object-cover rounded-lg shadow-md transition hover:opacity-80 hover:shadow-lg"
+                    className="w-full aspect-[2/3] object-cover rounded shadow-md transition-all duration-200 group-hover:opacity-80 group-hover:scale-[1.02]"
                     alt={im.movies.title}
                   />
                 ) : (
-                  <div className="w-full aspect-[2/3] bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
+                  <div className="w-full aspect-[2/3] bg-zinc-800 rounded flex items-center justify-center text-xs text-zinc-600">
                     No poster
                   </div>
                 )}
-                <p className="text-xs mt-1.5 font-medium leading-tight line-clamp-2">{im.movies.title}</p>
-                {im.movies.year && <p className="text-xs text-gray-400">{im.movies.year}</p>}
+                <p className="text-xs mt-1.5 font-medium text-zinc-300 leading-tight line-clamp-2">{im.movies.title}</p>
+                {im.movies.year && <p className="text-xs text-zinc-600">{im.movies.year}</p>}
               </div>
             ))}
           </div>
