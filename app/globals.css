@@ -73,3 +73,13 @@ button, a, [role="button"] {
 
 
 }
+
+/* MapLibre popup fade-in */
+.maplibregl-popup {
+  animation: popup-fadein 150ms ease forwards;
+}
+
+@keyframes popup-fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

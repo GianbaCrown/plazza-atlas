@@ -148,8 +148,10 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   useEffect(() => { theatersRef.current = theaters }, [theaters])
   useEffect(() => { routerRef.current = router }, [router])
 
-     function flyToTheater(t: Theater) {
+    function flyToTheater(t: Theater) {
     changeView('map')
+    // Close any open popup immediately before flying
+    popupRef.current?.remove()
     const map = mapRef.current
     if (!map) return
     setTimeout(() => {

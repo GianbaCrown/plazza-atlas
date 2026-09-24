@@ -89,16 +89,16 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center px-4"
-      style={{ opacity: visible ? 1 : 0, transition: 'opacity 200ms ease', touchAction: 'none' }}
+           style={{ opacity: visible ? 1 : 0, transition: 'opacity 150ms ease', touchAction: 'none' }}
       onTouchMove={(e) => e.preventDefault()}
     >
       <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={handleClose} />
 
       <div
         className="relative z-10 bg-[#111] rounded-2xl overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
-        style={{
-          transform: visible ? 'scale(1)' : 'scale(0.96)',
-          transition: 'transform 200ms ease',
+                style={{
+          transform: visible ? 'translateY(0)' : 'translateY(6px)',
+          transition: 'transform 150ms ease',
         }}
         onClick={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}

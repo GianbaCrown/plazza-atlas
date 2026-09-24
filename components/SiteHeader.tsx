@@ -85,14 +85,14 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     : 'w-52 px-4 py-1.5 rounded-full text-xs font-regular focus:outline-none bg-zinc-900 text-zinc-100 placeholder-gray-400 border border-zinc-600 transition'
 
   const Dropdown = () => open && results.length > 0 ? (
-    <ul className="absolute right-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-xl divide-y overflow-hidden z-30 border border-gray-100">
+    <ul className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-zinc-900 rounded-xl shadow-2xl divide-y divide-zinc-800 overflow-hidden z-30 border border-zinc-700/60">
       {results.map((t) => (
         <li key={t.id}
-          className="px-4 py-2.5 text-sm hover:bg-amber-50 cursor-pointer transition"
+          className="px-4 py-2.5 hover:bg-zinc-800 cursor-pointer transition"
           onMouseDown={() => handleSelect(t)}
           onTouchEnd={() => handleSelect(t)}>
-          <span className="font-medium text-gray-900 block">{t.name}</span>
-          <span className="text-gray-400 text-xs">{t.city}, {t.country}</span>
+          <span className="font-medium text-zinc-100 text-xs block">{t.name}</span>
+          <span className="text-zinc-500 text-xs">{t.city}, {t.country}</span>
         </li>
       ))}
     </ul>
