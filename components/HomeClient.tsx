@@ -307,7 +307,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           el.style.cssText = 'background:#c8a96e;width:14px;height:14px;border-radius:50%;border:2px solid #1a1a2e;cursor:pointer;'
           const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
 
-          el.onmouseenter = () => {
+          function showPopup() {
             if (!theater) return
             cancelClose()
             if (theater.image_path) {
@@ -322,7 +322,13 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
             popupEl.onmouseenter = cancelClose
             popupEl.onmouseleave = scheduleClose
           }
+
+          el.onmouseenter = showPopup
           el.onmouseleave = scheduleClose
+          el.onclick = (e) => {
+            e.stopPropagation()
+            showPopup()
+          }
         }
 
         markersOnScreen.push(

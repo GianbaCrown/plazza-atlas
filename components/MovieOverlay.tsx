@@ -30,19 +30,26 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-   useEffect(() => {
+    useEffect(() => {
     setMounted(true)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setVisible(true))
-    })
 
-    if (!prefetched && movie.tmdb_id) {
+    if (prefetched) {
+      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+      return
+    }
+
+    if (movie.tmdb_id) {
       fetch(`/api/tmdb/movie?id=${movie.tmdb_id}`)
         .then((r) => r.json())
-        .then((data) => { setFull(data); setLoading(false) })
-        .catch(() => setLoading(false))
-    } else if (!prefetched) {
-      setLoading(false)
+        .then((data) => {
+          setFull(data)
+          requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+        })
+        .catch(() => {
+          requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+        })
+    } else {
+      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
     }
   }, [movie.tmdb_id, prefetched])
 
