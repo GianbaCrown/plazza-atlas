@@ -27,31 +27,48 @@ function imageUrl(path?: string | null) {
 
 function hoverPopupHTML(t: Theater) {
   const img = imageUrl(t.image_path)
+  const dates = dateRange(t)
   return `
-    <div style="font-family:sans-serif;min-width:200px;cursor:default">
+    <div style="width:220px;font-family:system-ui,sans-serif">
       ${img ? `
-        <a href="/theaters/${t.slug}" data-theater-link="${t.slug}" style="display:block;width:100%;height:110px;background:#1a1a2e;border-radius:6px;margin-bottom:8px;overflow:hidden;cursor:pointer">
+        
+          <a href="/theaters/${t.slug}"
+          data-theater-link="${t.slug}"
+          style="display:block;width:100%;height:120px;overflow:hidden;cursor:pointer;background:#09090b;flex-shrink:0"
+        >
           <img
             src="${img}"
-            style="width:100%;height:110px;object-fit:cover;border-radius:6px;display:block;opacity:0;transition:opacity 0.3s ease"
+            style="width:100%;height:120px;object-fit:cover;display:block;opacity:0;transition:opacity 0.25s ease;transform:scale(1);transition:opacity 0.25s ease,transform 0.3s ease"
             onload="this.style.opacity=1"
+            onmouseover="this.style.transform='scale(1.03)'"
+            onmouseout="this.style.transform='scale(1)'"
           />
         </a>
       ` : ''}
-      <p style="font-weight:600;margin:0 0 2px;color:#1a1a2e">${t.name}</p>
-      <p style="font-size:12px;color:#888;margin:0 0 2px">${t.city ?? ''}${t.city && t.country ? ', ' : ''}${t.country ?? ''}</p>
-      <p style="font-size:12px;color:#888;margin:0 0 8px">${dateRange(t)}</p>
-      <a data-theater-link="${t.slug}" href="/theaters/${t.slug}" style="font-size:13px;color:#c8a96e;text-decoration:none">View theater →</a>
+      <div style="padding:10px 12px 12px">
+        <p style="font-weight:600;font-size:13px;color:#f4f4f5;margin:0 0 3px;line-height:1.3;letter-spacing:-0.01em">
+          ${t.name}
+        </p>
+        <p style="font-size:11px;color:#71717a;margin:0 0 2px;letter-spacing:0.01em">
+          ${[t.city, t.country].filter(Boolean).join(', ')}
+        </p>
+        ${dates
+          ? `<p style="font-size:11px;color:#52525b;margin:0 0 10px">${dates}</p>`
+          : `<div style="margin-bottom:10px"></div>`
+        }
+        
+          <a data-theater-link="${t.slug}"
+          href="/theaters/${t.slug}"
+          style="font-size:11px;font-weight:500;color:#d97706;text-decoration:none;letter-spacing:0.03em;display:inline-flex;align-items:center;gap:3px"
+        >
+          View theater →
+        </a>
+      </div>
     </div>
   `
 }
-
 function FilterDropdown({
-  label,
-  value,
-  options,
-  onChange,
-  isMap,
+  label, value, options, onChange, isMap,
 }: {
   label: string
   value: string
@@ -85,10 +102,7 @@ function FilterDropdown({
 
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={buttonClass}
-      >
+      <button onClick={() => setOpen((o) => !o)} className={buttonClass}>
         <span>{selected?.label ?? label}</span>
         <svg
           width="10" height="10" viewBox="0 0 10 10" fill="none"
@@ -98,7 +112,6 @@ function FilterDropdown({
           <polyline points="1,3 5,7 9,3" />
         </svg>
       </button>
-
       {open && (
         <div className={dropdownClass}>
           <ul className="py-1 max-h-64 overflow-y-auto">
@@ -123,11 +136,20 @@ function FilterDropdown({
   )
 }
 
-
-
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const router = useRouter()
-    const [view, setView] = useState<'map' | 'list'>('map')
+  const [view, setView] = useState<'map' | 'list'>('map')
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedDecade, setSelectedDecade] = useState('')
+
+  const mapContainer = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const popupRef = useRef<maplibregl.Popup | null>(null)
+  const theatersRef = useRef<Theater[]>(theaters)
+  const routerRef = useRef(router)
+
+  useEffect(() => { theatersRef.current = theaters }, [theaters])
+  useEffect(() => { routerRef.current = router }, [router])
 
   useEffect(() => {
     const saved = localStorage.getItem('plazza_view') as 'map' | 'list' | null
@@ -139,18 +161,9 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     localStorage.setItem('plazza_view', v)
   }
 
-  const mapContainer = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<maplibregl.Map | null>(null)
-  const popupRef = useRef<maplibregl.Popup | null>(null)
-  const theatersRef = useRef<Theater[]>(theaters)
-  const routerRef = useRef(router)
-
-  useEffect(() => { theatersRef.current = theaters }, [theaters])
-  useEffect(() => { routerRef.current = router }, [router])
-
-    function flyToTheater(t: Theater) {
+  // flyToTheater defined here — after refs, before map useEffect
+  function flyToTheater(t: Theater) {
     changeView('map')
-    // Close any open popup immediately before flying
     popupRef.current?.remove()
     const map = mapRef.current
     if (!map) return
@@ -169,30 +182,32 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       map.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
     }, 50)
   }
-  
 
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return
 
-      const map = new maplibregl.Map({
+    const map = new maplibregl.Map({
       container: mapContainer.current,
       style: `https://api.protomaps.com/styles/v5/dark/en.json?key=${process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY}`,
       center: [10, 50],
       zoom: 3.5,
-      transformRequest: (url) => {
-        return { url }
-      },
+      transformRequest: (url) => ({ url }),
     })
 
-    // Suppress tile 504 errors from console — these are transient server timeouts
     map.on('error', (e) => {
       if (e?.error?.message?.includes('504') || e?.error?.status === 504) return
       if (e?.error?.message?.includes('AJAXError')) return
     })
 
     mapRef.current = map
-    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 16, maxWidth: '240px' })    
-       popupRef.current.on('open', () => {
+    popupRef.current = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: true,
+      offset: 16,
+      maxWidth: '240px',
+    })
+
+    popupRef.current.on('open', () => {
       const el = popupRef.current!.getElement()
       el.querySelectorAll('[data-theater-link]').forEach((link) => {
         const anchor = link as HTMLAnchorElement
@@ -203,10 +218,9 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       })
     })
 
-       if (theaters.length > 0) {
-      // Find densest area using a grid approach
+    if (theaters.length > 0) {
       function findDenseCenter(theaters: Theater[]) {
-        const gridSize = 8 // degrees
+        const gridSize = 8
         const counts: Record<string, { count: number; lats: number[]; lngs: number[] }> = {}
         theaters.forEach((t) => {
           const key = `${Math.floor(t.lat / gridSize)},${Math.floor(t.lng / gridSize)}`
@@ -220,12 +234,20 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         const avgLng = densest.lngs.reduce((a, b) => a + b, 0) / densest.lngs.length
         return { lat: avgLat, lng: avgLng, count: densest.count }
       }
-
-      const dense = findDenseCenter(theaters)
-      const zoom = dense.count >= 5 ? 6 : dense.count >= 3 ? 5 : 4
+            const dense = findDenseCenter(theaters)
+      const targetZoom = dense.count >= 5 ? 6 : dense.count >= 3 ? 5 : 4
       map.setCenter([dense.lng, dense.lat])
-      map.setZoom(zoom)
+      map.setZoom(targetZoom - 4) // start zoomed out
+
+      map.on('load', () => {
+        map.easeTo({
+          zoom: targetZoom,
+          duration: 64000,
+          easing: (t) => t * (2 - t), // ease-out curve
+        })
+      })
     }
+
     const index = new Supercluster({ radius: 60, maxZoom: 16 })
     index.load(theaters.map((t) => ({
       type: 'Feature',
@@ -233,7 +255,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       geometry: { type: 'Point', coordinates: [t.lng, t.lat] },
     })) as any)
 
-        const markersOnScreen: maplibregl.Marker[] = []
+    const markersOnScreen: maplibregl.Marker[] = []
     let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
 
@@ -266,17 +288,17 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         if (c.properties.cluster) {
           el.textContent = String(c.properties.point_count)
           el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
-                    el.onclick = (e) => {
+          el.onclick = (e) => {
             e.stopPropagation()
             const leaves = index.getLeaves(c.properties.cluster_id, Infinity)
             if (leaves.length > 0) {
               const lngs = leaves.map((l: any) => l.geometry.coordinates[0])
               const lats = leaves.map((l: any) => l.geometry.coordinates[1])
-              const bounds = new maplibregl.LngLatBounds(
+              const fitBounds = new maplibregl.LngLatBounds(
                 [Math.min(...lngs), Math.min(...lats)],
                 [Math.max(...lngs), Math.max(...lats)]
               )
-              map.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 400 })
+              map.fitBounds(fitBounds, { padding: 80, maxZoom: 14, duration: 400 })
             } else {
               map.easeTo({ center: [lng, lat], zoom: zoom + 3, duration: 400 })
             }
@@ -288,24 +310,18 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           el.onmouseenter = () => {
             if (!theater) return
             cancelClose()
-
-            // Preload image with native browser constructor (avoid Next.js Image conflict)
             if (theater.image_path) {
               const img = new window.Image()
               img.src = imageUrl(theater.image_path)!
             }
-
             popupRef.current!
               .setLngLat([lng, lat])
               .setHTML(hoverPopupHTML(theater))
               .addTo(map)
-
-            // Allow hovering into the popup without it closing
             const popupEl = popupRef.current!.getElement()
             popupEl.onmouseenter = cancelClose
             popupEl.onmouseleave = scheduleClose
           }
-
           el.onmouseleave = scheduleClose
         }
 
@@ -315,23 +331,18 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       })
     }
 
-
+    // Register each event exactly once
     map.on('load', renderClusters)
     map.on('moveend', renderClusters)
 
-
-
-    map.on('load', renderClusters)
-    map.on('moveend', renderClusters)
-
-      let resizeTimer: ReturnType<typeof setTimeout>
+    let resizeTimer: ReturnType<typeof setTimeout>
     const resizeObserver = new ResizeObserver(() => {
       clearTimeout(resizeTimer)
       resizeTimer = setTimeout(() => map.resize(), 100)
     })
     resizeObserver.observe(mapContainer.current)
 
-       return () => {
+    return () => {
       clearTimeout(resizeTimer)
       resizeObserver.disconnect()
       map.remove()
@@ -339,16 +350,10 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     }
   }, [])
 
-  // Resize map when switching back to map view
   useEffect(() => {
-    if (view === 'map') {
-      setTimeout(() => mapRef.current?.resize(), 50)
-    }
+    if (view === 'map') mapRef.current?.resize()
   }, [view])
 
-  // Countries for filter — inside the component, before the return
-  const [selectedCountry, setSelectedCountry] = useState('')
-  const [selectedDecade, setSelectedDecade] = useState('')
   const countries = [...new Set(theaters.map((t) => t.country).filter((c): c is string => !!c))].sort()
   const decades = Array.from({ length: 13 }, (_, i) => 1900 + i * 10)
 
@@ -362,45 +367,36 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     }
     return true
   })
+
   const isMap = view === 'map'
 
   return (
-   
-     <div className="relative w-screen h-screen overflow-hidden">
-      {/* Map — always mounted */}
-                  <div style={{
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden' }}>
+
+      {/* Map layer */}
+      <div style={{
         position: 'absolute', inset: 0,
         opacity: isMap ? 1 : 0,
         pointerEvents: isMap ? 'auto' : 'none',
         transition: 'opacity 150ms ease',
-        willChange: 'opacity',
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
       }}>
-        <div
-          ref={mapContainer}
-          style={{
-            position: 'absolute', inset: 0,
-            transform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-          }}
-        />
+        <div ref={mapContainer} style={{ position: 'absolute', inset: 0 }} />
       </div>
 
       {/* List view */}
-            <div 
-            className="bg-zinc-900"
-            style={{
-        position: 'absolute', inset: 0,
-        opacity: isMap ? 0 : 1,
-        pointerEvents: isMap ? 'none' : 'auto',
-        transition: 'opacity 200ms ease',
-        overflowY: 'auto',
-        // background: '#fafaf9',
-      }}>
+      <div
+        className="bg-zinc-900"
+        style={{
+          position: 'absolute', inset: 0,
+          opacity: isMap ? 0 : 1,
+          pointerEvents: isMap ? 'none' : 'auto',
+          transition: 'opacity 200ms ease',
+          overflowY: 'auto',
+        }}
+      >
         <div className="pb-20 pt-16">
           <div className="max-w-6xl mx-auto px-4 py-6">
-                        <div className="flex gap-2 mb-6 flex-wrap">
+            <div className="flex gap-2 mb-6 flex-wrap">
               <FilterDropdown
                 label="All countries"
                 value={selectedCountry}
@@ -448,7 +444,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
       {/* Header always on top */}
       <div className="absolute top-0 left-0 right-0 z-20">
-                <SiteHeader
+        <SiteHeader
           variant={isMap ? 'map' : 'page'}
           theaters={theaters}
           onTheaterSelect={flyToTheater}

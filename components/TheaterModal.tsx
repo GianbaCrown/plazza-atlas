@@ -90,7 +90,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-200"
+        className="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm transition-opacity duration-200"
         style={{ opacity: mounted ? 1 : 0 }}
         onClick={close}
       />
@@ -101,11 +101,11 @@ export default function TheaterModal({ slug }: { slug: string }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="absolute bg-zinc-950 overflow-y-auto
-          bottom-0 left-0 right-0 rounded-t-xl
-          sm:bottom-auto sm:right-0 sm:top-0 sm:left-auto sm:h-full sm:w-[80vw] sm:rounded-none sm:rounded-l-xl"
+                className="absolute bg-zinc-950 overflow-y-auto
+          bottom-0 left-0 right-0
+          sm:bottom-auto sm:right-0 sm:top-0 sm:left-auto sm:h-full sm:w-[80vw] sm:rounded-l-xl"
         style={{
-          maxHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? '92dvh' : '100%',
+          maxHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? '100dvh' : '100%',
           transform: typeof window !== 'undefined' && window.innerWidth < 640
             ? mobileTransform : desktopTransform,
           transition: isDragging.current ? 'none' : 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',

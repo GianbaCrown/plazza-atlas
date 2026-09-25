@@ -56,7 +56,7 @@ export default function AboutModal() {
           </svg>
         </button>
 
-        <div className="px-8 py-10">
+               <div className="px-8 py-10 overflow-y-auto max-h-[calc(80vh-2rem)]">
           <h1 className="text-2xl font-bold mb-1">About Plazza Atlas</h1>
           <p className="text-gray-400 text-sm mb-6">A digital atlas of lost movie theaters</p>
 

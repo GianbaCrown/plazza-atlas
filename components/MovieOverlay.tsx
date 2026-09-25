@@ -30,9 +30,11 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
+   useEffect(() => {
     setMounted(true)
-    requestAnimationFrame(() => setVisible(true))
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true))
+    })
 
     if (!prefetched && movie.tmdb_id) {
       fetch(`/api/tmdb/movie?id=${movie.tmdb_id}`)
@@ -89,16 +91,16 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center px-4"
-           style={{ opacity: visible ? 1 : 0, transition: 'opacity 150ms ease', touchAction: 'none' }}
+                 style={{ opacity: visible ? 1 : 0, transition: 'opacity 220ms ease', touchAction: 'none' }}
       onTouchMove={(e) => e.preventDefault()}
     >
       <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={handleClose} />
 
       <div
         className="relative z-10 bg-[#111] rounded-2xl overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
-                style={{
-          transform: visible ? 'translateY(0)' : 'translateY(6px)',
-          transition: 'transform 150ms ease',
+                        style={{
+          transform: visible ? 'translateY(0)' : 'translateY(16px)',
+          transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
         }}
         onClick={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}

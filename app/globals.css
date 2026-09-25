@@ -74,12 +74,93 @@ button, a, [role="button"] {
 
 }
 
-/* MapLibre popup fade-in */
+
+/* ============================================
+   MapLibre popup — full override
+   High specificity needed: MapLibre stylesheet
+   loads after globals and wins on equal weight
+   ============================================ */
+
+/* Outer container */
+.maplibregl-popup .maplibregl-popup-content {
+  background: #18181b !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+  font-family: system-ui, sans-serif !important;
+}
+
+/* The triangular tip — all anchor positions */
+.maplibregl-popup .maplibregl-popup-tip {
+  border-width: 8px !important;
+}
+
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: #18181b !important;
+  border-bottom-color: transparent !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: #18181b !important;
+  border-top-color: transparent !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+
+.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: #18181b !important;
+  border-left-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
+.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: #18181b !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
+.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip {
+  border-top-color: #18181b !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  border-left-color: transparent !important;
+}
+
+.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: #18181b !important;
+  border-left-color: transparent !important;
+  border-bottom-color: transparent !important;
+  border-right-color: transparent !important;
+}
+
+/* Close button */
+.maplibregl-popup .maplibregl-popup-close-button {
+  color: #52525b !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  padding: 6px 8px !important;
+  background: transparent !important;
+  top: 0 !important;
+  right: 0 !important;
+}
+
+.maplibregl-popup .maplibregl-popup-close-button:hover {
+  color: #a1a1aa !important;
+  background: transparent !important;
+}
+
+/* Popup fade-in — opacity only, no transform (transform breaks positioning) */
 .maplibregl-popup {
   animation: popup-fadein 150ms ease forwards;
 }
 
 @keyframes popup-fadein {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

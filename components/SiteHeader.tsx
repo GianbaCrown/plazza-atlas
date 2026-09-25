@@ -84,8 +84,9 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     ? 'w-52 px-4 py-1.5 rounded-full text-xs focus:outline-none bg-zinc-900/15 backdrop-blur-sm text-white placeholder-white/50 border border-zinc-600 transition'
     : 'w-52 px-4 py-1.5 rounded-full text-xs font-regular focus:outline-none bg-zinc-900 text-zinc-100 placeholder-gray-400 border border-zinc-600 transition'
 
-  const Dropdown = () => open && results.length > 0 ? (
-    <ul className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-zinc-900 rounded-xl shadow-2xl divide-y divide-zinc-800 overflow-hidden z-30 border border-zinc-700/60">
+    const Dropdown = () => open && results.length > 0 ? (
+    <ul className="absolute right-0 top-full mt-1.5 w-72 bg-zinc-900 rounded-xl shadow-2xl divide-y divide-zinc-800 overflow-hidden z-30 border border-zinc-700/60"
+      style={{ maxWidth: 'calc(100vw - 1rem)', right: 0 }}>
       {results.map((t) => (
         <li key={t.id}
           className="px-4 py-2.5 hover:bg-zinc-800 cursor-pointer transition"
@@ -184,7 +185,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
 
       {/* Search Mobile */}
       <div className="flex sm:hidden items-center gap-2">
-        {mobileSearchOpen ? (
+                {mobileSearchOpen ? (
           <div ref={searchRef} className="relative">
             <input
               autoFocus
@@ -194,7 +195,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
               onChange={(e) => handleSearchChange(e.target.value)}
               onBlur={() => setTimeout(() => { if (!query) setMobileSearchOpen(false) }, 150)}
               className={inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')}
-              style={{ fontSize: '16px' }} // Prevents iOS auto-zoom on focus
+              style={{ fontSize: '16px', width: '140px' }}
             />
             <Dropdown />
           </div>
