@@ -17,10 +17,7 @@ body {
   background: #fafaf9;
 }
 
-h1, h2, h3 {
-  font-family: var(--font-serif), Georgia, serif;
-  letter-spacing: -0.01em;
-}
+
 
 
 /* Prevent iOS zoom on input focus */

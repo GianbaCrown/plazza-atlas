@@ -9,7 +9,7 @@ const emptyForm = {
   name: '', slug: '', description: '', address: '', city: '', country: '',
   lat: 0, lng: 0, year_opened: null as number | null, year_closed: null as number | null,
   nearest_theater_name: '', nearest_theater_address: '', nearest_theater_lat: null as number | null, nearest_theater_lng: null as number | null,
-  status: 'draft', source_id: null as string | null, source_url: '' as string, is_open: false as boolean,
+  status: 'draft', source_id: null as string | null, source_url: '' as string, is_open: false as boolean, website: '' as string, nearest_theater_website: '' as string,
 }
 
 
@@ -93,6 +93,8 @@ export default function TheaterManager() {
       source_id: form.source_id || null,
       source_url: form.source_url || null,
       is_open: form.is_open ?? false,
+      website: form.website || null,
+      nearest_theater_website: form.nearest_theater_website || null,
     }
 
     if (!editingId) {
@@ -282,8 +284,7 @@ export default function TheaterManager() {
                   />
                 </div>
               </div>
-
-                                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       id="is_open"
@@ -295,6 +296,17 @@ export default function TheaterManager() {
                       This theater is still open today
                     </label>
                   </div>
+                  {form.is_open && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Theater website (optional)</label>
+                      <input
+                        value={form.website ?? ''}
+                        onChange={(e) => update('website', e.target.value)}
+                        placeholder="https://..."
+                        className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  )}
 
               {/* Nearest theater */}
                                            <div>
@@ -317,6 +329,15 @@ export default function TheaterManager() {
                       </p>
                     )}
                   </div>
+
+                                      <div className="mt-2">
+                      <input
+                        value={form.nearest_theater_website ?? ''}
+                        onChange={(e) => update('nearest_theater_website', e.target.value)}
+                        placeholder="Nearest theater website (optional)"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
 
               {/* Source */}
                   <div>

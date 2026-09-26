@@ -101,9 +101,9 @@ export default function TheaterModal({ slug }: { slug: string }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-                className="absolute bg-zinc-950 overflow-y-auto
+                className="absolute bg-zinc-900 overflow-y-auto
           bottom-0 left-0 right-0
-          sm:bottom-auto sm:right-0 sm:top-0 sm:left-auto sm:h-full sm:w-[80vw] sm:rounded-l-xl"
+          sm:bottom-auto sm:right-0 sm:top-0 sm:left-auto sm:h-full md:w-[60vw] sm:w-[80vw] sm:border border-l-zinc-800"
         style={{
           maxHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? '100dvh' : '100%',
           transform: typeof window !== 'undefined' && window.innerWidth < 640
@@ -130,7 +130,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
         </button>
 
         {/* Content */}
-        <div className="px-6 sm:px-10 py-6 pb-24">
+        <div className="px-6 sm:px-18 py-6 pb-24">
 
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -166,13 +166,13 @@ export default function TheaterModal({ slug }: { slug: string }) {
                 </h1>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-zinc-500 text-xs tracking-wide">
+                  <span className="text-zinc-400 text-xs tracking-wide">
                     {[theater.city, theater.country].filter(Boolean).join(', ')}
                   </span>
                   {(theater.year_opened || theater.year_closed) && (
                     <>
-                      <span className="text-zinc-700 text-xs">·</span>
-                      <span className="text-zinc-500 text-xs">
+                      <span className="text-zinc-400 text-xs">·</span>
+                      <span className="text-zinc-400 text-xs">
                         {theater.year_opened && theater.year_closed
                           ? `${theater.year_opened} – ${theater.year_closed}`
                           : theater.year_opened
@@ -184,8 +184,8 @@ export default function TheaterModal({ slug }: { slug: string }) {
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="h-px bg-zinc-800 mb-7" />
+              {/* Divider 
+              <div className="h-px bg-zinc-800 mb-7" />*/}
 
               {/* Images */}
               <div className="theater-modal-dark">
@@ -205,7 +205,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
               {/* Nearest theater */}
               {theater.nearest_theater_name && (
                 <div className="border border-zinc-800 rounded-lg px-4 py-3.5 mb-5">
-                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 mb-1">
+                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-1">
                     Still showing nearby
                   </p>
                   <p className="text-sm text-zinc-300 font-medium">{theater.nearest_theater_name}</p>
@@ -217,7 +217,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
               {/* Source */}
               {(theater.sources || theater.source_url) && (
-                <div className="flex items-center gap-3 pt-5 border-t border-zinc-800/60">
+                <div className="flex items-center gap-3 pt-5 border-t border-zinc-800">
                   {theater.sources?.image_path && (
                     <img
                       src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/source-images/${theater.sources.image_path}`}
@@ -226,7 +226,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
                     />
                   )}
                   <div>
-                    <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 mb-0.5">Source</p>
+                    <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-0.5">Source</p>
                     {theater.source_url ? (
                       
                         <a href={theater.source_url}

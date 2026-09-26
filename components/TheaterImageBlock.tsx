@@ -72,9 +72,9 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal', mo
 
   return (
     <figure className="mb-8">
-      <div className="relative bg-zinc-900 rounded-lg overflow-hidden aspect-[4/3]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      <div className="relative bg-zinc-900 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+               <img
           src={supabaseImageUrl(img.storage_path, size === 'full' ? 1600 : 900)}
           srcSet={`
             ${supabaseImageUrl(img.storage_path, 600)} 600w,
@@ -84,7 +84,8 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal', mo
           `}
           sizes={size === 'full' ? '(max-width: 768px) 100vw, 768px' : '(max-width: 640px) 100vw, 80vw'}
           alt={img.caption ?? theaterName}
-          className="w-full h-full object-cover"
+          className="w-full h-auto block"
+          style={{ maxWidth: '100%', objectFit: 'contain' }}
         />
 
         {isMobile && (
@@ -110,8 +111,8 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal', mo
       )}
 
       {img.image_movies && img.image_movies.length > 0 && (
-        <div className="mt-4">
-          <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-700 mb-3">
+        <div className="mt-8">
+          <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
             Films on the marquee
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
