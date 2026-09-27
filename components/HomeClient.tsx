@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import SiteHeader from './SiteHeader'
 
+
 type Theater = {
   id: string; name: string; slug: string; lat: number; lng: number
   city?: string; country?: string; year_opened?: number; year_closed?: number; image_path?: string | null
@@ -188,10 +189,14 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: `https://api.protomaps.com/styles/v5/dark/en.json?key=${process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY}`,
+      style: '/map-style.json',
       center: [10, 50],
       zoom: 3.5,
       transformRequest: (url) => ({ url }),
+    })
+
+        map.on('load', () => {
+      map.setProjection({ type: 'mercator' }) // or "globe" for flat view
     })
 
     map.on('error', (e) => {
@@ -413,7 +418,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
                   ...countries.map((c) => ({ label: c, value: c })),
                 ]}
               />
-              <FilterDropdown
+          {/*    <FilterDropdown
                 label="All decades"
                 value={selectedDecade}
                 isMap={false}
@@ -422,7 +427,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
                   { label: 'All decades', value: '' },
                   ...decades.map((d) => ({ label: `${d}s`, value: String(d) })),
                 ]}
-              />
+              /> */}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {filteredTheaters.map((t) => (

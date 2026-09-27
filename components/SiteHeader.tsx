@@ -195,7 +195,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
               onChange={(e) => handleSearchChange(e.target.value)}
               onBlur={() => setTimeout(() => { if (!query) setMobileSearchOpen(false) }, 150)}
               className={inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')}
-              style={{ fontSize: '16px', width: '140px' }}
+              style={{ fontSize: '14px', width: '140px' }}
             />
             <Dropdown />
           </div>

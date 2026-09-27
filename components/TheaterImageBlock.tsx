@@ -127,7 +127,7 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal', mo
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
-                    className="w-full aspect-[2/3] object-cover rounded shadow-md transition-all duration-200 group-hover:opacity-80 group-hover:scale-[1.02]"
+                    className="w-full aspect-[2/3] object-cover rounded shadow-md transition-all duration-200 group-hover:scale-[1.02]"
                     alt={im.movies.title}
                   />
                 ) : (
@@ -136,7 +136,7 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal', mo
                   </div>
                 )}
                 <p className="text-xs mt-1.5 font-medium text-zinc-300 leading-tight line-clamp-2">{im.movies.title}</p>
-                {im.movies.year && <p className="text-xs text-zinc-600">{im.movies.year}</p>}
+                {im.movies.year && <p className="text-xs text-zinc-500">{im.movies.year}</p>}
               </div>
             ))}
           </div>

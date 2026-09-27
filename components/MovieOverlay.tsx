@@ -104,7 +104,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={handleClose} />
 
       <div
-        className="relative z-10 bg-[#111] rounded-2xl overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
+        className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
                         style={{
           transform: visible ? 'translateY(0)' : 'translateY(16px)',
           transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
@@ -133,9 +133,9 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
         <div className="flex-1 p-4 flex flex-col gap-2.5 min-w-0">
           <div className="pr-5">
             <h2 className="text-white font-bold text-sm leading-snug">{title}</h2>
-            <p className="text-white/50 text-xs mt-0.5 flex items-center gap-1 flex-wrap">
+            <p className="text-zinc-500 text-xs mt-0.5 flex items-center gap-1 flex-wrap">
               {year}
-              {(full?.director || loading) && <span className="text-white/20">·</span>}
+              {(full?.director || loading) && <span className="text-zinc-400">·</span>}
               {full?.director && <span>{full.director}</span>}
               {loading && !full?.director && (
                 <span className="inline-block w-20 h-2.5 bg-white/10 animate-pulse rounded" />
@@ -153,7 +153,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
                 <div className="h-2 bg-white/10 animate-pulse rounded w-2/3" />
               </div>
             ) : full?.overview ? (
-              <p className="text-white/65 text-xs leading-relaxed line-clamp-6">{full.overview}</p>
+              <p className="text-zinc-300 text-xs leading-relaxed line-clamp-6">{full.overview}</p>
             ) : (
               <p className="text-white/30 text-xs italic">No synopsis available.</p>
             )}
@@ -173,7 +173,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
 
         <button
           onClick={handleClose}
-          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition cursor-pointer"
+          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-zinc-800 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition cursor-pointer"
         >
           <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="1" y1="1" x2="13" y2="13"/>
