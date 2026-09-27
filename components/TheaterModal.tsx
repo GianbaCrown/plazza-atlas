@@ -204,9 +204,9 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
               {/* Nearest theater */}
               {theater.nearest_theater_name && (
-                <div className="border border-zinc-800 rounded-lg px-4 py-3.5 mb-5">
+                <div className="mb-5 border-t border-zinc-800 pt-5">
                   <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-1">
-                    Still showing nearby
+                    Nearest theater today
                   </p>
                   <p className="text-sm text-zinc-300 font-medium">{theater.nearest_theater_name}</p>
                   {theater.nearest_theater_address && (
