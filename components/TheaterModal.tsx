@@ -10,7 +10,6 @@ export default function TheaterModal({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const movieCache = useRef<Record<number, any>>({})
-
   const panelRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef(0)
   const [dragOffset, setDragOffset] = useState(0)
@@ -187,13 +186,14 @@ export default function TheaterModal({ slug }: { slug: string }) {
               {/* Divider 
               <div className="h-px bg-zinc-800 mb-7" />*/}
 
-              {/* Images */}
-              <div className="theater-modal-dark">
-                {images.map((img: any) => (
-                  <TheaterImageBlock key={img.id} img={img} theaterName={theater.name} size="modal" />
-                ))}
-              </div>
-
+                           {/* All images — carousel if multiple */}
+              {images.length > 0 && (
+                <TheaterImageBlock
+                  images={images}
+                  theaterName={theater.name}
+                  movieCache={movieCache.current}
+                />
+              )}
               {/* Description */}
               {theater.description && (
                 <div

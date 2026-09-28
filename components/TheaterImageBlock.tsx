@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
-import ImageLightbox from './ImageLightbox'
+import { useState, useCallback } from 'react'
+import ImageOverlay from './ImageOverlay'
 import MovieOverlay from './MovieOverlay'
 
 type Movie = {
@@ -24,130 +24,166 @@ type ImageRecord = {
 }
 
 type Props = {
-  img: ImageRecord
+  images: ImageRecord[]
   theaterName: string
-  size?: 'full' | 'modal'
   movieCache?: Record<number, any>
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 
-function supabaseImageUrl(path: string, width?: number) {
-  const base = `${SUPABASE_URL}/storage/v1/object/public/theater-images/${path}`
-  if (width) return `${base}?width=${width}&quality=85`
-  return base
+function imageUrl(path: string) {
+  return `${SUPABASE_URL}/storage/v1/object/public/theater-images/${path}`
 }
 
-export default function TheaterImageBlock({ img, theaterName, size = 'modal', movieCache = {} }: Props) {
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+export default function TheaterImageBlock({ images, theaterName, movieCache = {} }: Props) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [overlayImage, setOverlayImage] = useState<ImageRecord | null>(null)
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null)
-  const localCache = useRef<Record<number, any>>(movieCache)
+  const localCache = { ...movieCache }
 
-  // Keep local cache in sync with prop (prop is populated by TheaterModal prefetch)
-  useEffect(() => {
-    localCache.current = { ...localCache.current, ...movieCache }
-  }, [movieCache])
+  const current = images[currentIndex]
+  const isMultiple = images.length > 1
 
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)')
-    setIsMobile(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
+  function prev() {
+    setCurrentIndex((i) => (i === 0 ? images.length - 1 : i - 1))
+  }
+
+  function next() {
+    setCurrentIndex((i) => (i === images.length - 1 ? 0 : i + 1))
+  }
 
   const prefetch = useCallback((tmdbId: number) => {
-    if (!tmdbId || localCache.current[tmdbId]) return
+    if (!tmdbId || localCache[tmdbId]) return
     fetch(`/api/tmdb/movie?id=${tmdbId}`)
       .then((r) => r.json())
-      .then((data) => { localCache.current[tmdbId] = data })
+      .then((d) => { localCache[tmdbId] = d })
       .catch(() => {})
   }, [])
 
   function handleMovieClick(movie: any) {
-    const prefetched = movie.tmdb_id ? localCache.current[movie.tmdb_id] ?? null : null
+    const prefetched = movie.tmdb_id ? localCache[movie.tmdb_id] ?? null : null
     setSelectedMovie({ ...movie, prefetched })
   }
 
+  const movies = current.image_movies ?? []
+
   return (
-    <figure className="mb-8">
-      <div className="relative bg-zinc-900 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-               <img
-          src={supabaseImageUrl(img.storage_path, size === 'full' ? 1600 : 900)}
-          srcSet={`
-            ${supabaseImageUrl(img.storage_path, 600)} 600w,
-            ${supabaseImageUrl(img.storage_path, 900)} 900w,
-            ${supabaseImageUrl(img.storage_path, 1400)} 1400w,
-            ${supabaseImageUrl(img.storage_path, 1600)} 1600w
-          `}
-          sizes={size === 'full' ? '(max-width: 768px) 100vw, 768px' : '(max-width: 640px) 100vw, 80vw'}
-          alt={img.caption ?? theaterName}
-          className="w-full h-auto block"
+    <div className="mb-8">
+      {/* Image container */}
+      <div className="relative bg-zinc-900 overflow-hidden group">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl(current.storage_path)}
+          alt={current.caption ?? theaterName}
+          className="w-full h-auto block cursor-zoom-in"
           style={{ maxWidth: '100%', objectFit: 'contain' }}
+          onClick={() => setOverlayImage(current)}
         />
 
-        {isMobile && (
-          <button
-            onClick={() => setLightboxOpen(true)}
-            className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm rounded-full p-2 flex items-center justify-center cursor-pointer"
-            aria-label="View full image"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="15 3 21 3 21 9"/>
-              <polyline points="9 21 3 21 3 15"/>
-              <line x1="21" y1="3" x2="14" y2="10"/>
-              <line x1="3" y1="21" x2="10" y2="14"/>
-            </svg>
-          </button>
+        {/* Carousel arrows — only when multiple images */}
+        {isMultiple && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); prev() }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950/70 hover:bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); next() }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950/70 hover:bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Image counter badge */}
+        {isMultiple && (
+          <div className="absolute top-2 right-2 bg-zinc-950/70 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-zinc-400 pointer-events-none">
+            {currentIndex + 1} / {images.length}
+          </div>
         )}
       </div>
 
-      {(img.caption || img.credit) && (
-        <figcaption className="text-xs text-zinc-600 mt-2">
-          {img.caption} {img.credit && <span className="italic">· {img.credit}</span>}
-        </figcaption>
+     {/* Caption and credit */}
+{(current.caption || current.credit) && (
+  <div className="mt-2 mb-6 leading-relaxed">
+    {current.caption && <p className="text-xs text-zinc-300">{current.caption}</p>}
+    {current.credit && <p className="text-xs text-zinc-500">{current.credit}</p>}
+  </div>
+)}
+
+      {/* Breadcrumb dots */}
+      {isMultiple && (
+        <div className="flex items-center justify-center gap-1.5 mt-3">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentIndex(i)}
+              className={`rounded-full transition-all cursor-pointer ${
+                i === currentIndex
+                  ? 'w-4 h-1.5 bg-amber-500'
+                  : 'w-1.5 h-1.5 bg-zinc-700 hover:bg-zinc-500'
+              }`}
+            />
+          ))}
+        </div>
       )}
 
-      {img.image_movies && img.image_movies.length > 0 && (
-        <div className="mt-8">
+      {/* Films on the marquee */}
+      {movies.length > 0 && (
+        <div className="mt-4">
           <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
             Films on the marquee
           </p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-            {img.image_movies.map((im, i) => (
+          <div className={`grid gap-3 ${
+            movies.length === 1 ? 'grid-cols-2 max-w-[160px]' :
+            movies.length === 2 ? 'grid-cols-2 max-w-[200px]' :
+            movies.length === 3 ? 'grid-cols-4' :
+            movies.length === 4 ? 'grid-cols-4' :
+            movies.length === 6 ? 'grid-cols-4' :
+            'grid-cols-4 sm:grid-cols-5'
+          }`}>
+            {movies.map((im, i) => (
               <div
                 key={i}
-                className="text-center cursor-pointer group"
+                className="text-center cursor-pointer group/poster"
                 onMouseEnter={() => im.movies.tmdb_id && prefetch(im.movies.tmdb_id)}
                 onClick={() => handleMovieClick(im.movies)}
               >
                 {im.movies.poster_path ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
-                    className="w-full aspect-[2/3] object-cover rounded shadow-md transition-all duration-200 group-hover:scale-[1.02]"
+                    src={`https://image.tmdb.org/t/p/w185${im.movies.poster_path}`}
+                    className="w-full aspect-[2/3] object-cover rounded shadow-md border border-zinc-800"
                     alt={im.movies.title}
                   />
                 ) : (
-                  <div className="w-full aspect-[2/3] bg-zinc-800 rounded flex items-center justify-center text-xs text-zinc-600">
+                  <div className="w-full aspect-[2/3] bg-zinc-800 rounded flex items-center justify-center text-[10px] text-zinc-600">
                     No poster
                   </div>
                 )}
-                <p className="text-xs mt-1.5 font-medium text-zinc-300 leading-tight line-clamp-2">{im.movies.title}</p>
-                {im.movies.year && <p className="text-xs text-zinc-500">{im.movies.year}</p>}
+                <p className="text-xs mt-1.5 font-medium text-zinc-200 leading-tight line-clamp-2">{im.movies.title}</p>
+                {im.movies.year && <p className="text-[10px] text-zinc-500">{im.movies.year}</p>}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {lightboxOpen && (
-        <ImageLightbox
-          src={supabaseImageUrl(img.storage_path)}
-          alt={img.caption ?? theaterName}
-          onClose={() => setLightboxOpen(false)}
+      {/* Overlays */}
+      {overlayImage && (
+        <ImageOverlay
+          src={imageUrl(overlayImage.storage_path)}
+          alt={overlayImage.caption ?? theaterName}
+          caption={overlayImage.caption}
+          credit={overlayImage.credit}
+          onClose={() => setOverlayImage(null)}
         />
       )}
 
@@ -158,6 +194,6 @@ export default function TheaterImageBlock({ img, theaterName, size = 'modal', mo
           onClose={() => setSelectedMovie(null)}
         />
       )}
-    </figure>
+    </div>
   )
 }

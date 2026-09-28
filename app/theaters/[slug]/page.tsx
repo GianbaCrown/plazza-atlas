@@ -48,9 +48,7 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
                 {theater.year_closed && ` – ${theater.year_closed}`}
               </p>
 
-        {images.map((img: any) => (
-          <TheaterImageBlock key={img.id} img={img} theaterName={theater.name} size="full" />
-        ))}
+              <TheaterImageBlock images={images} theaterName={theater.name} />
 
         {theater.description && (
           <div className="mb-8 leading-relaxed rich-text-content"
