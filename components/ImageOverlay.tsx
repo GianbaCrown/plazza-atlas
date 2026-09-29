@@ -112,7 +112,7 @@ export default function ImageOverlay({ src, alt, caption, credit, onClose }: Pro
           alignItems: 'center',
           touchAction: 'none',
         }}
-        onClick={(e) => e.stopPropagation()}
+       onClick={handleClose}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -143,8 +143,8 @@ export default function ImageOverlay({ src, alt, caption, credit, onClose }: Pro
         {(caption || credit) && (
           <p className="mt-3 text-xs text-center leading-relaxed px-4" style={{ maxWidth: '80vw' }}>
             {caption && <span className="text-zinc-400">{caption}</span>}
-            {caption && credit && <span className="text-zinc-700"> · </span>}
-            {credit && <span className="text-zinc-500">{credit}</span>}
+            {caption && credit && <span className="text-zinc-400"> · </span>}
+            {credit && <span className="text-zinc-400">{credit}</span>}
           </p>
         )}
       </div>

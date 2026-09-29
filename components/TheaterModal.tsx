@@ -203,14 +203,31 @@ export default function TheaterModal({ slug }: { slug: string }) {
               )}
 
               {/* Nearest theater */}
-              {theater.nearest_theater_name && (
+                          {theater.nearest_theater_name && (
                 <div className="mb-5 border-t border-zinc-800 pt-5">
                   <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-1">
                     Nearest theater today
                   </p>
                   <p className="text-sm text-zinc-300 font-medium">{theater.nearest_theater_name}</p>
                   {theater.nearest_theater_address && (
-                    <p className="text-xs text-zinc-600 mt-0.5">{theater.nearest_theater_address}</p>
+                    <p className="text-xs text-zinc-600 mt-0.5">
+                      {theater.nearest_theater_address
+                        .split(',')
+                        .filter((part: string) => part.trim().toLowerCase() !== theater.nearest_theater_name?.trim().toLowerCase())
+                        .join(',')
+                        .trim()
+                        .replace(/^,\s*/, '')}
+                    </p>
+                  )}
+                  {theater.nearest_theater_website && (
+                    <a
+                      href={theater.nearest_theater_website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer mt-2"
+                    >
+                      Book now →
+                    </a>
                   )}
                 </div>
               )}
