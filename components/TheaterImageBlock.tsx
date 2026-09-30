@@ -36,7 +36,7 @@ function imgUrl(path: string) {
 }
 
 export default function TheaterImageBlock({ images, theaterName, movieCache = {} }: Props) {
-   const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [prevIndex, setPrevIndex] = useState<number | null>(null)
   const [direction, setDirection] = useState<'left' | 'right'>('left')
   const [animating, setAnimating] = useState(false)
@@ -175,7 +175,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
           </>
         )}
 
-        {isMultiple && currentIndex === 0 && !animating && (
+      {/*   {isMultiple && currentIndex === 0 && !animating && (
           <div className="sm:hidden absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-zinc-950/60 backdrop-blur-sm rounded-full px-2.5 py-1 pointer-events-none">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round">
               <polyline points="15 18 9 12 15 6" transform="rotate(90 12 12)"/>
@@ -185,16 +185,18 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
               <polyline points="9 18 15 12 9 6" transform="rotate(90 12 12)"/>
             </svg>
           </div>
-        )}
-      </div>
+        )} */}
 
-       {/* Caption and credit */}
+               {/* Caption and credit 
 {(current.caption || current.credit) && (
-  <div className="mt-2 mb-6 leading-relaxed">
+  <div className="relative mt-2 mb-6 leading-relaxed">
     {current.caption && <p className="text-xs text-zinc-300">{current.caption}</p>}
     {current.credit && <p className="text-xs text-zinc-500">{current.credit}</p>}
   </div>
-)}
+)} */}
+      </div>
+
+
 
       {/* Breadcrumb dots */}
       {isMultiple && (
@@ -220,7 +222,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
             Films on the marquee
           </p>
           <div className={`grid gap-3 ${
-                movies.length === 1 ? 'grid-cols-2 max-w-[160px]' :
+                movies.length === 1 ? 'grid-cols-2 max-w-[280px]' :
             movies.length === 2 ? 'grid-cols-2 max-w-[200px]' :
             movies.length === 3 ? 'grid-cols-4' :
             movies.length === 4 ? 'grid-cols-4' :
