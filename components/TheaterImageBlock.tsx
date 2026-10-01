@@ -155,16 +155,16 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
       {movies.length > 0 && (
         <div className="mt-5">
           <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
-            Films on the marquee
+            What's playing
           </p>
-          <div className={`grid gap-3 ${
-            movies.length === 1 ? 'grid-cols-5 sm:grid-cols-4' :
-            movies.length === 2 ? 'grid-cols-5 sm:grid-cols-4' :
-            movies.length === 3 ? 'grid-cols-5 sm:grid-cols-4' :
-            movies.length === 4 ? 'grid-cols-5 sm:grid-cols-4' :
-            movies.length === 6 ? 'grid-cols-5 sm:grid-cols-4' :
-            'grid-cols-4 sm:grid-cols-5'
-          }`}>
+         <div className={`grid gap-3 ${
+  movies.length === 1 ? 'grid-cols-4 sm:grid-cols-5' :
+  movies.length === 2 ? 'grid-cols-4 sm:grid-cols-5' :
+  movies.length === 3 ? 'grid-cols-4 sm:grid-cols-5' :
+  movies.length === 4 ? 'grid-cols-4 sm:grid-cols-5' :
+  movies.length === 6 ? 'grid-cols-4 sm:grid-cols-5' :
+  'grid-cols-3 sm:grid-cols-5'
+}`}>
             {movies.map((im, i) => (
               <div
                 key={i}
