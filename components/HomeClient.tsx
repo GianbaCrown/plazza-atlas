@@ -9,9 +9,11 @@ import Link from 'next/link'
 import SiteHeader from './SiteHeader'
 
 
+
 type Theater = {
   id: string; name: string; slug: string; lat: number; lng: number
-  city?: string; country?: string; year_opened?: number; year_closed?: number; image_path?: string | null
+  city?: string; country?: string; year_opened?: number; year_closed?: number
+  image_path?: string | null; created_at?: string
 }
 
 function dateRange(t: Theater) {
@@ -142,12 +144,13 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const [view, setView] = useState<'map' | 'list'>('map')
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedDecade, setSelectedDecade] = useState('')
-
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
   const theatersRef = useRef<Theater[]>(theaters)
   const routerRef = useRef(router)
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'alpha'>('newest')
+  const [visibleCount, setVisibleCount] = useState(30)
 
   useEffect(() => { theatersRef.current = theaters }, [theaters])
   useEffect(() => { routerRef.current = router }, [router])
@@ -368,16 +371,24 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const countries = [...new Set(theaters.map((t) => t.country).filter((c): c is string => !!c))].sort()
   const decades = Array.from({ length: 13 }, (_, i) => 1900 + i * 10)
 
-  const filteredTheaters = theaters.filter((t) => {
-    if (selectedCountry && t.country !== selectedCountry) return false
-    if (selectedDecade) {
-      const decade = Number(selectedDecade)
-      const opened = t.year_opened ?? 0
-      const closed = t.year_closed ?? 9999
-      if (opened > decade + 9 || closed < decade) return false
-    }
-    return true
-  })
+   const filteredTheaters = theaters
+    .filter((t) => {
+      if (selectedCountry && t.country !== selectedCountry) return false
+      if (selectedDecade) {
+        const decade = Number(selectedDecade)
+        const opened = t.year_opened ?? 0
+        const closed = t.year_closed ?? 9999
+        if (opened > decade + 9 || closed < decade) return false
+      }
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'alpha') return a.name.localeCompare(b.name)
+      if (sortBy === 'oldest') return (a as any).created_at > (b as any).created_at ? 1 : -1
+      return (a as any).created_at < (b as any).created_at ? 1 : -1 // newest first
+    })
+
+  const visibleTheaters = filteredTheaters.slice(0, visibleCount)
 
   const isMap = view === 'map'
 
@@ -407,30 +418,41 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       >
         <div className="pb-20 pt-16">
           <div className="max-w-6xl mx-auto px-4 py-6">
-            <div className="flex gap-2 mb-6 flex-wrap">
+                        <div className="flex gap-2 mb-6 flex-wrap items-center">
               <FilterDropdown
                 label="All countries"
                 value={selectedCountry}
                 isMap={false}
-                onChange={setSelectedCountry}
+                onChange={(v) => { setSelectedCountry(v); setVisibleCount(30) }}
                 options={[
                   { label: 'All countries', value: '' },
                   ...countries.map((c) => ({ label: c, value: c })),
                 ]}
               />
-          {/*    <FilterDropdown
+             {/*  <FilterDropdown
                 label="All decades"
                 value={selectedDecade}
                 isMap={false}
-                onChange={setSelectedDecade}
+                onChange={(v) => { setSelectedDecade(v); setVisibleCount(30) }}
                 options={[
                   { label: 'All decades', value: '' },
                   ...decades.map((d) => ({ label: `${d}s`, value: String(d) })),
                 ]}
               /> */}
+              <FilterDropdown
+                label="Sort"
+                value={sortBy}
+                isMap={false}
+                onChange={(v) => setSortBy(v as 'newest' | 'oldest' | 'alpha')}
+                options={[
+                  { label: 'Newest first', value: 'newest' },
+                  { label: 'Earliest first', value: 'oldest' },
+                  { label: 'A → Z', value: 'alpha' },
+                ]}
+              />
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {filteredTheaters.map((t) => (
+                            {visibleTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer">
                   <div className="border border-zinc-600 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
                     {t.image_path && (
@@ -445,10 +467,21 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
                   <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
                 </Link>
               ))}
-              {filteredTheaters.length === 0 && (
-                <p className="text-gray-400 col-span-4 py-8">No theaters match this filter.</p>
-              )}
             </div>
+
+            {visibleCount < filteredTheaters.length && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setVisibleCount((n) => n + 30)}
+                  className="flex items-center gap-2 px-5 py-2 rounded-full border border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors cursor-pointer"
+                >
+                  Load more
+                  <span className="text-zinc-600">
+                    {filteredTheaters.length - visibleCount} remaining
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

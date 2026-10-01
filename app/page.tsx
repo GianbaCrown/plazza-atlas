@@ -7,7 +7,7 @@ export default async function HomePage() {
   const supabase = await createClient()
   const { data: theaters } = await supabase
     .from('theaters')
-    .select('id, name, slug, lat, lng, city, country, year_opened, year_closed, images(storage_path, is_featured)')
+    .select('id, name, slug, lat, lng, city, country, year_opened, year_closed, created_at, images(storage_path, is_featured)')
     .eq('status', 'published')
 
   const mapped = (theaters ?? []).map((t: any) => ({
@@ -20,6 +20,7 @@ export default async function HomePage() {
     country: t.country,
     year_opened: t.year_opened,
     year_closed: t.year_closed,
+    created_at: t.created_at,
     image_path: t.images?.find((i: any) => i.is_featured)?.storage_path ?? t.images?.[0]?.storage_path ?? null,
   }))
 

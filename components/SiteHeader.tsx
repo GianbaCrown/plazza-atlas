@@ -30,6 +30,27 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
   // Prevents toggle from jumping when theater modal opens and URL changes
   const isMapActive = view !== undefined ? view === 'map' : true
 
+
+    const pillRef = useRef<HTMLDivElement>(null)
+    const trackRefDesktop = useRef<HTMLDivElement>(null)
+  const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
+  const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
+  const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
+
+   useEffect(() => {
+    function measure() {
+      const active = isMapActive ? mapBtnRefDesktop.current : listBtnRefDesktop.current
+      const track = trackRefDesktop.current
+      if (!active || !track) return
+      const trackRect = track.getBoundingClientRect()
+      const btnRect = active.getBoundingClientRect()
+      setPillStyle({ width: btnRect.width, left: btnRect.left - trackRect.left })
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [isMapActive])
+
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -99,58 +120,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     </ul>
   ) : null
 
-  const ViewToggle = () => {
-    const pillRef = useRef<HTMLDivElement>(null)
-    const trackRef = useRef<HTMLDivElement>(null)
-    const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
-    const mapBtnRef = useRef<HTMLButtonElement>(null)
-    const listBtnRef = useRef<HTMLButtonElement>(null)
-
-    useEffect(() => {
-      function measure() {
-        const active = isMapActive ? mapBtnRef.current : listBtnRef.current
-        const track = trackRef.current
-        if (!active || !track) return
-        const trackRect = track.getBoundingClientRect()
-        const btnRect = active.getBoundingClientRect()
-        setPillStyle({ width: btnRect.width, left: btnRect.left - trackRect.left })
-      }
-      measure()
-      window.addEventListener('resize', measure)
-      return () => window.removeEventListener('resize', measure)
-    }, [isMapActive])
-
-    return (
-      <div
-        ref={trackRef}
-        className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
-      >
-        <div
-          ref={pillRef}
-          className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
-          style={{
-            width: pillStyle.width,
-            left: pillStyle.left,
-            transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}
-        />
-        <button
-          ref={mapBtnRef}
-          onClick={() => handleViewToggle('map')}
-          className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-        >
-          Map
-        </button>
-        <button
-          ref={listBtnRef}
-          onClick={() => handleViewToggle('list')}
-          className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-        >
-          List
-        </button>
-      </div>
-    )
-  }
+ 
 
   // Your existing wrapper classes preserved exactly
   const wrapperClass = isMap
@@ -179,7 +149,33 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
           <Dropdown />
         </div>
         <div className="flex-shrink-0">
-          <ViewToggle />
+                                     <div
+                ref={trackRefDesktop}
+                className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
+              >
+                <div
+                  className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
+                  style={{
+                    width: pillStyle.width,
+                    left: pillStyle.left,
+                    transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  }}
+                />
+                <button
+                  ref={mapBtnRefDesktop}
+                  onClick={() => handleViewToggle('map')}
+                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+                >
+                  Map
+                </button>
+                <button
+                  ref={listBtnRefDesktop}
+                  onClick={() => handleViewToggle('list')}
+                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+                >
+                  List
+                </button>
+              </div>
         </div>
       </div>
 
@@ -208,7 +204,30 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
             </svg>
           </button>
         )}
-        <ViewToggle />
+                                  <div
+                className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
+              >
+                <div
+                  className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
+                  style={{
+                    width: pillStyle.width,
+                    left: pillStyle.left,
+                    transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  }}
+                />
+                <button
+                  onClick={() => handleViewToggle('map')}
+                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+                >
+                  Map
+                </button>
+                <button
+                  onClick={() => handleViewToggle('list')}
+                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
+                >
+                  List
+                </button>
+              </div>
       </div>
     </div>
   )
