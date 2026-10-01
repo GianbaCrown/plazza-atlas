@@ -33,11 +33,10 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
 
     const pillRef = useRef<HTMLDivElement>(null)
     const trackRefDesktop = useRef<HTMLDivElement>(null)
-  const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
-  const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
-  const mapBtnRefMobile = useRef<HTMLButtonElement>(null)
-  const listBtnRefMobile = useRef<HTMLButtonElement>(null)
-  const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
+    const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
+    const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
+
+    const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
 
    useEffect(() => {
     function measure() {
@@ -151,7 +150,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
           <Dropdown />
         </div>
         <div className="flex-shrink-0">
-                                     <div
+                <div
                 ref={trackRefDesktop}
                 className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
               >
@@ -218,14 +217,14 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
                   }}
                 />
                 <button
-                  ref={listBtnRefMobile}
+             
                   onClick={() => handleViewToggle('map')}
                   className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
                 >
                   Map
                 </button>
                 <button
-                  ref={listBtnRefMobile}
+             
                   onClick={() => handleViewToggle('list')}
                   className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
                 >
