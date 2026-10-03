@@ -22,19 +22,27 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
   useEffect(() => {
     const supabase = createClient()
+
+    // Core theater + images — this must succeed
     supabase
       .from('theaters')
-      .select(`*, sources ( id, name, url, image_path ), images ( id, storage_path, caption, credit, is_featured, sort_order, image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) ) )`)
+      .select(`
+        *,
+        images (
+          id, storage_path, caption, credit, is_featured, sort_order,
+          image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) )
+        )
+      `)
       .eq('slug', slug)
       .eq('status', 'published')
       .single()
-      .then(({ data }: { data: any }) => {
+      .then(({ data, error }: { data: any; error: any }) => {
+        if (error || !data) { setLoading(false); return }
         setTheater(data)
         setLoading(false)
 
-        // Prefetch all movie details in parallel as soon as theater loads
-        // so they're cached before user taps a poster
-        if (data?.images) {
+        // Prefetch movie details
+        if (data.images) {
           const tmdbIds = new Set<number>()
           data.images.forEach((img: any) => {
             img.image_movies?.forEach((im: any) => {
@@ -48,6 +56,32 @@ export default function TheaterModal({ slug }: { slug: string }) {
               .catch(() => {})
           })
         }
+
+        // Fetch sources separately — failure won't break the theater load
+        supabase
+          .from('theater_sources')
+          .select('id, source_id, source_url, sort_order, sources ( id, name, url, image_path )')
+          .eq('theater_id', data.id)
+          .order('sort_order')
+          .then(({ data: sources }: { data: any }) => {
+            if (sources?.length) {
+              setTheater((prev: any) => ({ ...prev, theater_sources: sources }))
+            }
+          })
+          .catch(() => {})
+
+        // Fetch previous names separately
+        supabase
+          .from('theater_names')
+          .select('id, name, year_from, year_to, sort_order')
+          .eq('theater_id', data.id)
+          .order('sort_order')
+          .then(({ data: names }: { data: any }) => {
+            if (names?.length) {
+              setTheater((prev: any) => ({ ...prev, theater_names: names }))
+            }
+          })
+          .catch(() => {})
       })
   }, [slug])
 
@@ -202,6 +236,33 @@ export default function TheaterModal({ slug }: { slug: string }) {
                 />
               )}
 
+                            {/* Previous names */}
+              {theater.theater_names?.length > 0 && (
+                <div className="mb-7">
+                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 mb-3">
+                    Previous names
+                  </p>
+                  <div className="space-y-0 border border-zinc-800 rounded-lg overflow-hidden">
+                    {[...theater.theater_names]
+                      .sort((a: any, b: any) => a.sort_order - b.sort_order)
+                      .map((n: any, i: number) => (
+                        <div key={n.id} className={`flex items-center justify-between px-4 py-2.5 text-xs ${i > 0 ? 'border-t border-zinc-800' : ''}`}>
+                          <span className="text-zinc-300 font-medium">{n.name}</span>
+                          <span className="text-zinc-600 tabular-nums flex-shrink-0 ml-4">
+                            {n.year_from && n.year_to
+                              ? `${n.year_from} – ${n.year_to}`
+                              : n.year_from
+                                ? `from ${n.year_from}`
+                                : n.year_to
+                                  ? `until ${n.year_to}`
+                                  : ''}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               {/* Nearest theater */}
                           {theater.nearest_theater_name && (
                 <div className="mb-5 border-t border-zinc-800 pt-5">
@@ -233,40 +294,45 @@ export default function TheaterModal({ slug }: { slug: string }) {
               )}
 
               {/* Source */}
-              {(theater.sources || theater.source_url) && (
-                <div className="flex items-center gap-3 pt-5 border-t border-zinc-800">
-                  {theater.sources?.image_path && (
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/source-images/${theater.sources.image_path}`}
-                      className="w-7 h-7 object-cover rounded opacity-80"
-                      alt={theater.sources?.name}
-                    />
-                  )}
-                  <div>
-                    <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-0.5">Source</p>
-                    {theater.source_url ? (
-                      
-                        <a href={theater.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer"
-                        >
-                        {theater.sources?.name ?? theater.source_url}
-                      </a>
-                    ) : theater.sources?.url ? (
-                      
-                        <a href={theater.sources.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer"
-                      >
-                        {theater.sources.name}
-                      </a>
-                    ) : (
-                      <p className="text-xs text-zinc-400">{theater.sources?.name}</p>
-                    )}
-                  </div>
-                </div>
+                           {theater.theater_sources?.length > 0 && (
+                             <div className="mb-5 border-t border-zinc-800 pt-5">
+                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-1">
+                    Source
+                  </p>
+                <div className="pt-4 border-t border-zinc-900 space-y-2">
+                  {[...theater.theater_sources]
+                    .sort((a: any, b: any) => a.sort_order - b.sort_order)
+                    .map((ts: any) => {
+                      const name = ts.sources?.name
+                      const url = ts.source_url || ts.sources?.url
+                      return (
+                        <div key={ts.id} className="flex items-center gap-2.5">
+                          {ts.sources?.image_path && (
+                            <img
+                              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/source-images/${ts.sources.image_path}`}
+                              className="w-5 h-5 object-cover rounded opacity-60"
+                              alt={name}
+                            />
+                          )}
+                          <p className="text-[10px] text-zinc-700">
+                            
+                            {url ? (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer cursor-pointer"
+                              >
+                                {name ?? url}
+                              </a>
+                            ) : (
+                              <span className="text-zinc-600">{name}</span>
+                            )}
+                          </p>
+                        </div>
+                      )
+                    })}
+                </div></div>
               )}
 
             </>

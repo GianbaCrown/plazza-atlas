@@ -4,12 +4,14 @@ import { createClient } from '@/lib/supabase/client'
 import LocationSearch from './LocationSearch'
 import ImageManager from './ImageManager'
 import RichTextEditor from './RichTextEditor'
+import MultiSourceEditor from './MultiSourceEditor'
+import TheaterNamesEditor from './TheaterNamesEditor'
 
 const emptyForm = {
   name: '', slug: '', description: '', address: '', city: '', country: '',
   lat: 0, lng: 0, year_opened: null as number | null, year_closed: null as number | null,
   nearest_theater_name: '', nearest_theater_address: '', nearest_theater_lat: null as number | null, nearest_theater_lng: null as number | null,
-  status: 'draft', source_id: null as string | null, source_url: '' as string, is_open: false as boolean, website: '' as string, nearest_theater_website: '' as string,
+  status: 'draft', is_open: false as boolean, website: '' as string, nearest_theater_website: '' as string,
 }
 
 
@@ -25,6 +27,8 @@ export default function TheaterManager() {
   const [pendingImages, setPendingImages] = useState<any[]>([])
   const [initialImages, setInitialImages] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
+  const [theaterSources, setTheaterSources] = useState<any[]>([])
+    const [theaterNames, setTheaterNames] = useState<any[]>([])
 
   async function loadTheaters() {
     setLoadingList(true)
@@ -70,11 +74,24 @@ export default function TheaterManager() {
     const { data: imgs } = await supabase.from('images')
       .select('*, image_movies(movie_id, movies(id, title, year, poster_path))')
       .eq('theater_id', id).order('sort_order')
+    const { data: theaterSourcesData } = await supabase
+      .from('theater_sources')
+      .select('id, source_id, source_url, sort_order')
+      .eq('theater_id', id)
+      .order('sort_order')
+    const { data: theaterNames } = await supabase
+      .from('theater_names')
+      .select('id, name, year_from, year_to, sort_order')
+      .eq('theater_id', id)
+      .order('sort_order')
+   
     setForm(theater)
     setEditingId(id)
     setPendingImages([])
     setInitialImages(imgs ?? [])
     setPanelOpen(true)
+    setTheaterSources(theaterSourcesData ?? [])
+    setTheaterNames(theaterNames ?? [])
   }
 
   async function handleSave() {
@@ -340,24 +357,37 @@ export default function TheaterManager() {
                     </div>
 
               {/* Source */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Source (optional)</label>
-                    <select value={form.source_id ?? ''} onChange={(e) => update('source_id', e.target.value || null)}
-                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                      <option value="">No source</option>
-                      {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
+                                  <div>
+                    <label className="text-sm font-medium text-gray-700">Sources (optional)</label>
+                    <div className="mt-1">
+                                            {editingId ? (
+                        <MultiSourceEditor
+                          key={editingId}
+                          theaterId={editingId}
+                          initialEntries={theaterSources}
+                          sources={sources}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-400">Save the theater first to add sources.</p>
+                      )}
+                    </div>
                   </div>
 
+ {/* Previous Names */}
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Source URL (optional)</label>
-                    <input
-                      value={form.source_url ?? ''}
-                      onChange={(e) => update('source_url', e.target.value)}
-                      placeholder="https://..."
-                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    />
+                    <label className="text-sm font-medium text-gray-700">Previous names (optional)</label>
+                    <div className="mt-1">
+                      {editingId ? (
+                        <TheaterNamesEditor
+                          theaterId={editingId}
+                          initialNames={theaterNames}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-400">Save the theater first to add previous names.</p>
+                      )}
+                    </div>
                   </div>
+                 
 
                   
 

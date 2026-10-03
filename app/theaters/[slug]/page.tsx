@@ -8,7 +8,7 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
   const supabase = await createClient()
   const { data: theater } = await supabase
     .from('theaters')
-    .select(`*, sources ( id, name, url, image_path ), images ( id, storage_path, caption, credit, is_featured, sort_order, image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) ) )`)
+       .select(`*, theater_sources ( id, source_id, source_url, sort_order, sources ( id, name, url, image_path ) ), images ( id, storage_path, caption, credit, is_featured, sort_order, image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) ) ), theater_names ( id, name, year_from, year_to, sort_order )`)
     .eq('slug', slug)
     .eq('status', 'published')
     .single()
@@ -107,6 +107,32 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
           />
         )}
 
+                {theater.theater_names?.length > 0 && (
+          <div className="mb-7 mt-6">
+            <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 mb-3">
+              Previous names
+            </p>
+            <div className="border border-zinc-800 rounded-lg overflow-hidden">
+              {[...theater.theater_names]
+                .sort((a: any, b: any) => a.sort_order - b.sort_order)
+                .map((n: any, i: number) => (
+                  <div key={n.id} className={`flex items-center justify-between px-4 py-2.5 text-xs ${i > 0 ? 'border-t border-zinc-800' : ''}`}>
+                    <span className="text-zinc-300 font-medium">{n.name}</span>
+                    <span className="text-zinc-600 tabular-nums flex-shrink-0 ml-4">
+                      {n.year_from && n.year_to
+                        ? `${n.year_from} – ${n.year_to}`
+                        : n.year_from
+                          ? `from ${n.year_from}`
+                          : n.year_to
+                            ? `until ${n.year_to}`
+                            : ''}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* Nearest theater */}
         {theater.nearest_theater_name && (
           <div className="border border-zinc-800 rounded-lg px-5 py-4 mb-6">
@@ -131,41 +157,42 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
         )}
 
         {/* Source */}
-        {(theater.sources || theater.source_url) && (
-          <div className="flex items-center gap-2.5 pt-4 border-t border-zinc-800">
-            {theater.sources?.image_path && (
-              <img
-                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/source-images/${theater.sources.image_path}`}
-                className="w-5 h-5 object-cover rounded opacity-60"
-                alt={theater.sources?.name}
-              />
-            )}
-            <p className="text-[10px] text-zinc-700">
-              Source:{' '}
-              {theater.source_url ? (
-                <a
-                  href={theater.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer underline underline-offset-2"
-                >
-                  {theater.sources?.name ?? theater.source_url}
-                </a>
-              ) : theater.sources?.url ? (
-                <a
-                  href={theater.sources.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer underline underline-offset-2"
-                >
-                  {theater.sources.name}
-                </a>
-              ) : (
-                <span className="text-zinc-600">{theater.sources?.name}</span>
+                    {theater.theater_sources?.length > 0 && (
+                <div className="pt-4 border-t border-zinc-900 space-y-2">
+                  {[...theater.theater_sources]
+                    .sort((a: any, b: any) => a.sort_order - b.sort_order)
+                    .map((ts: any) => {
+                      const name = ts.sources?.name
+                      const url = ts.source_url || ts.sources?.url
+                      return (
+                        <div key={ts.id} className="flex items-center gap-2.5">
+                          {ts.sources?.image_path && (
+                            <img
+                              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/source-images/${ts.sources.image_path}`}
+                              className="w-5 h-5 object-cover rounded opacity-60"
+                              alt={name}
+                            />
+                          )}
+                          <p className="text-[10px] text-zinc-700">
+                            Source:{' '}
+                            {url ? (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer underline underline-offset-2"
+                              >
+                                {name ?? url}
+                              </a>
+                            ) : (
+                              <span className="text-zinc-600">{name}</span>
+                            )}
+                          </p>
+                        </div>
+                      )
+                    })}
+                </div>
               )}
-            </p>
-          </div>
-        )}
       </article>
     </div>
   )

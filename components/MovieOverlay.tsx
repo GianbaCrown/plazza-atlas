@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { createClient } from '@/lib/supabase/client'
 
 type Movie = {
   title: string
@@ -25,6 +26,32 @@ type Props = {
 }
 
 export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
+
+
+  const [userCountry, setUserCountry] = useState<string>('')
+  const [affiliateLinks, setAffiliateLinks] = useState<any[]>([])
+
+  useEffect(() => {
+    // Detect country via IP
+    fetch('/api/country')
+      .then((r) => r.json())
+      .then((d) => setUserCountry(d.country ?? ''))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!movie.tmdb_id || !userCountry) return
+    const supabase = createClient()
+    supabase
+      .from('affiliate_links')
+      .select('*')
+      .eq('tmdb_id', movie.tmdb_id)
+      .eq('country', userCountry)
+      .then(({ data }) => setAffiliateLinks(data ?? []))
+  }, [movie.tmdb_id, userCountry])
+
+
+
   const [full, setFull] = useState<FullMovie | null>(prefetched ?? null)
   const [loading, setLoading] = useState(!prefetched)
   const [visible, setVisible] = useState(false)
@@ -54,6 +81,11 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   }, [movie.tmdb_id, prefetched])
 
   useEffect(() => {
+
+
+
+
+    
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') handleClose()
     }
@@ -164,12 +196,28 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
               <a href={tmdbUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-amber-400 hover:text-amber-300 text-xs transition cursor-pointer mt-auto pt-1"
+              className="text-amber-500 hover:text-amber-300 text-xs transition cursor-pointer mt-auto pt-1"
             >
               View on TMDB →
             </a>
           )}
         </div>
+
+                    {affiliateLinks.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-zinc-800 space-y-1.5">
+                {affiliateLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xs text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+                  >
+                    {link.cta} →
+                  </a>
+                ))}
+              </div>
+            )}
 
         <button
           onClick={handleClose}

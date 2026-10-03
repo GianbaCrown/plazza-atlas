@@ -35,23 +35,35 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     const trackRefDesktop = useRef<HTMLDivElement>(null)
     const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
     const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
-
+  const trackRefMobile = useRef<HTMLDivElement>(null)
+  const mapBtnRefMobile = useRef<HTMLButtonElement>(null)
+  const listBtnRefMobile = useRef<HTMLButtonElement>(null)
     const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
 
    useEffect(() => {
     function measure() {
-      const active = isMapActive ? mapBtnRefDesktop.current : listBtnRefDesktop.current
-      const track = trackRefDesktop.current
+      const desktopVisible =
+        !!trackRefDesktop.current &&
+        trackRefDesktop.current.offsetParent !== null
+
+      const track = desktopVisible ? trackRefDesktop.current : trackRefMobile.current
+      const mapBtn = desktopVisible ? mapBtnRefDesktop.current : mapBtnRefMobile.current
+      const listBtn = desktopVisible ? listBtnRefDesktop.current : listBtnRefMobile.current
+
+      const active = isMapActive ? mapBtn : listBtn
       if (!active || !track) return
+
       const trackRect = track.getBoundingClientRect()
       const btnRect = active.getBoundingClientRect()
+      if (btnRect.width === 0) return
+
       setPillStyle({ width: btnRect.width, left: btnRect.left - trackRect.left })
     }
+
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
   }, [isMapActive])
-
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -205,7 +217,8 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
             </svg>
           </button>
         )}
-                                  <div
+                                          <div
+                ref={trackRefMobile}
                 className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
               >
                 <div
@@ -217,14 +230,14 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
                   }}
                 />
                 <button
-             
+                  ref={mapBtnRefMobile}
                   onClick={() => handleViewToggle('map')}
                   className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
                 >
                   Map
                 </button>
                 <button
-             
+                  ref={listBtnRefMobile}
                   onClick={() => handleViewToggle('list')}
                   className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
                 >

@@ -155,7 +155,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
       {movies.length > 0 && (
         <div className="mt-5">
           <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
-            What's playing
+            What was playing
           </p>
          <div className={`grid gap-3 ${
   movies.length === 1 ? 'grid-cols-4 sm:grid-cols-5' :
