@@ -47,7 +47,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       .select('*')
       .eq('tmdb_id', movie.tmdb_id)
       .eq('country', userCountry)
-      .then(({ data }) => setAffiliateLinks(data ?? []))
+      .then(({ data }: { data: any }) => setAffiliateLinks(data ?? []))
   }, [movie.tmdb_id, userCountry])
 
 
