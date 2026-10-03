@@ -107,8 +107,6 @@ export default function TheaterManager() {
       nearest_theater_lat: form.nearest_theater_lat,
       nearest_theater_lng: form.nearest_theater_lng,
       status: form.status,
-      source_id: form.source_id || null,
-      source_url: form.source_url || null,
       is_open: form.is_open ?? false,
       website: form.website || null,
       nearest_theater_website: form.nearest_theater_website || null,
