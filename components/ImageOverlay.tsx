@@ -149,9 +149,9 @@ export default function ImageOverlay({ src, alt, caption, credit, onClose }: Pro
         )}
       </div>
 
-      <p className="absolute bottom-4 text-[10px] text-zinc-500 pointer-events-none">
+     {/*    <p className="absolute bottom-4 text-[10px] text-zinc-500 pointer-events-none">
         {isMobile ? 'Pinch to zoom · Tap to close' : 'Click anywhere to close'}
-      </p>
+      </p> */}
     </div>,
     document.body
   )

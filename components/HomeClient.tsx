@@ -250,7 +250,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       map.on('load', () => {
         map.easeTo({
           zoom: targetZoom,
-          duration: 64000,
+          duration: 264000,
           easing: (t) => t * (2 - t), // ease-out curve
         })
       })
@@ -416,7 +416,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           overflowY: 'auto',
         }}
       >
-        <div className="pb-20 pt-16">
+        <div className="pb-20 pt-32">
           <div className="max-w-6xl mx-auto px-4 py-6">
                         <div className="flex gap-2 mb-6 flex-wrap items-center">
               <FilterDropdown

@@ -154,9 +154,9 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
       {/* Films on the marquee */}
       {movies.length > 0 && (
         <div className="mt-5">
-          <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
+          <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 mb-3">
             What was playing
-          </p>
+          </h2>
          <div className={`grid gap-3 ${
   movies.length === 1 ? 'grid-cols-4 sm:grid-cols-5' :
   movies.length === 2 ? 'grid-cols-4 sm:grid-cols-5' :

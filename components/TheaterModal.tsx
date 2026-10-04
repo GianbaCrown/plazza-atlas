@@ -181,18 +181,35 @@ export default function TheaterModal({ slug }: { slug: string }) {
               {/* Header */}
               <div className="mb-7 pr-8">
 
-                {/* Still open label */}
-                {theater.is_open && (
-                  <div className="inline-flex items-center gap-1.5 mb-3">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    </span>
-                    <span className="text-[10px] font-medium tracking-widest uppercase text-emerald-500/80">
-                      Still open today
-                    </span>
-                  </div>
-                )}
+                 {/* Still open */}
+        {theater.is_open && (
+          <div className="inline-flex items-center gap-2 mb-3">
+            <div className="inline-flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white"/>
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"/>
+              </span>
+              <span className="text-[10px] font-medium tracking-widest uppercase text-emerald-500">
+                Still open today
+              </span>
+            </div>
+            {theater.website && (
+              <>
+                <span className="text-emerald-700 text-xs">·</span>
+                <a
+                  href={theater.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-medium tracking-widest uppercase text-emerald-500 hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  Book now →
+                </a>
+              </>
+            )}
+          </div>
+        )}
+
+                
 
                 <h1 className="text-xl sm:text-2xl font-semibold text-zinc-100 tracking-tight leading-snug mb-1.5">
                   {theater.name}
@@ -266,12 +283,12 @@ export default function TheaterModal({ slug }: { slug: string }) {
               {/* Nearest theater */}
                           {theater.nearest_theater_name && (
                 <div className="mb-5 border-t border-zinc-800 pt-5">
-                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-1">
+                  <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
                     Nearest theater today
-                  </p>
-                  <p className="text-sm text-zinc-300 font-medium">{theater.nearest_theater_name}</p>
+                  </h2>
+                  <p className="text-sm text-zinc-300 font-medium mt-4">{theater.nearest_theater_name}</p>
                   {theater.nearest_theater_address && (
-                    <p className="text-xs text-zinc-600 mt-0.5">
+                    <p className="text-xs text-zinc-500 mt-0.5">
                       {theater.nearest_theater_address
                         .split(',')
                         .filter((part: string) => part.trim().toLowerCase() !== theater.nearest_theater_name?.trim().toLowerCase())
@@ -296,9 +313,9 @@ export default function TheaterModal({ slug }: { slug: string }) {
               {/* Source */}
                            {theater.theater_sources?.length > 0 && (
                              <div className="mb-5 border-t border-zinc-800 pt-5">
-                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-1">
+                  <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
                     Source
-                  </p>
+                  </h2>
                 <div className="pt-4 border-t border-zinc-900 space-y-2">
                   {[...theater.theater_sources]
                     .sort((a: any, b: any) => a.sort_order - b.sort_order)

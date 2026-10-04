@@ -25,7 +25,7 @@ export default function BottomNav() {
         </Link>
         <span className="text-white/20">·</span>
         <Link href="/submit" className="text-white/80 hover:text-white transition px-2 py-0.5 rounded-full hover:bg-white/10 cursor-pointer">
-          Submit
+          Contact
         </Link>
         <span className="text-white/20">·</span>
         <button

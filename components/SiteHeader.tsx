@@ -137,8 +137,8 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
 
   // Your existing wrapper classes preserved exactly
   const wrapperClass = isMap
-    ? 'absolute top-0 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
-    : 'sticky top-0 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-800/90 backdrop-blur-sm border-b border-zinc-600'
+    ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
+    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-800/90 backdrop-blur-sm border-b border-zinc-600'
 
   return (
     <div className={wrapperClass}>
@@ -197,21 +197,22 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
                 {mobileSearchOpen ? (
           <div ref={searchRef} className="relative">
             <input
-              autoFocus
+          
               type="text"
               value={query}
               placeholder="Search..."
               onChange={(e) => handleSearchChange(e.target.value)}
               onBlur={() => setTimeout(() => { if (!query) setMobileSearchOpen(false) }, 150)}
-              className={inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')}
-              style={{ fontSize: '14px', width: '140px' }}
+              className={`${inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')} p-2 rounded font-sm`}
+        
+              style={{width: '140px' }}
             />
             <Dropdown />
           </div>
         ) : (
           <button onClick={() => setMobileSearchOpen(true)} className="cursor-pointer p-1">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={isMap ? 'white' : '#374151'} strokeWidth="2">
+              stroke={isMap ? '#FFF' : '#FFF'} strokeWidth="2" opacity="0.5">
               <circle cx="11" cy="11" r="7" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>

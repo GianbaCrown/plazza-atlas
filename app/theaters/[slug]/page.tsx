@@ -30,7 +30,7 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
             <line x1="19" y1="12" x2="5" y2="12"/>
             <polyline points="12,19 5,12 12,5"/>
           </svg>
-          Map
+          Back
         </Link>
         <span className="text-zinc-700 text-xs">·</span>
         <Link href="/?view=list" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
@@ -134,27 +134,34 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
         )}
 
         {/* Nearest theater */}
-        {theater.nearest_theater_name && (
-          <div className="border border-zinc-800 rounded-lg px-5 py-4 mb-6">
-            <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 mb-2">
-              Still showing nearby
-            </p>
-            <p className="text-sm font-semibold text-zinc-200 mb-0.5">{theater.nearest_theater_name}</p>
-            {theater.nearest_theater_address && (
-              <p className="text-xs text-zinc-600 mb-2">{theater.nearest_theater_address}</p>
-            )}
-            {theater.nearest_theater_website && (
-              <a
-                href={theater.nearest_theater_website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer"
-              >
-                Visit website →
-              </a>
-            )}
-          </div>
-        )}
+                          {theater.nearest_theater_name && (
+                <div className="mb-5 border-t border-zinc-800 pt-5">
+                  <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
+                    Nearest theater today
+                  </h2>
+                  <p className="text-sm text-zinc-300 font-medium mt-4">{theater.nearest_theater_name}</p>
+                  {theater.nearest_theater_address && (
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {theater.nearest_theater_address
+                        .split(',')
+                        .filter((part: string) => part.trim().toLowerCase() !== theater.nearest_theater_name?.trim().toLowerCase())
+                        .join(',')
+                        .trim()
+                        .replace(/^,\s*/, '')}
+                    </p>
+                  )}
+                  {theater.nearest_theater_website && (
+                    <a
+                      href={theater.nearest_theater_website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer mt-2"
+                    >
+                      Book now →
+                    </a>
+                  )}
+                </div>
+              )}
 
         {/* Source */}
                     {theater.theater_sources?.length > 0 && (
