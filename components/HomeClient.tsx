@@ -165,7 +165,6 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     localStorage.setItem('plazza_view', v)
   }
 
-  // flyToTheater defined here — after refs, before map useEffect
   function flyToTheater(t: Theater) {
     changeView('map')
     popupRef.current?.remove()
@@ -173,17 +172,25 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     if (!map) return
     setTimeout(() => {
       map.resize()
-      const onMoveEnd = () => {
-        if (popupRef.current) {
-          popupRef.current
-            .setLngLat([t.lng, t.lat])
-            .setHTML(hoverPopupHTML(t))
-            .addTo(map)
-        }
-        map.off('moveend', onMoveEnd)
-      }
-      map.on('moveend', onMoveEnd)
       map.flyTo({ center: [t.lng, t.lat], zoom: 14, speed: 1.4, curve: 1.6, essential: true })
+
+      // Wait until map is fully settled at destination before showing popup
+      const checkArrival = () => {
+        const center = map.getCenter()
+        const distLng = Math.abs(center.lng - t.lng)
+        const distLat = Math.abs(center.lat - t.lat)
+        if (distLng < 0.0001 && distLat < 0.0001) {
+          // Arrived — show popup
+          if (popupRef.current) {
+            popupRef.current
+              .setLngLat([t.lng, t.lat])
+              .setHTML(hoverPopupHTML(t))
+              .addTo(map)
+          }
+          map.off('moveend', checkArrival)
+        }
+      }
+      map.on('moveend', checkArrival)
     }, 50)
   }
 
@@ -393,8 +400,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const isMap = view === 'map'
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden' }}>
-
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b' }}>
       {/* Map layer */}
       <div style={{
         position: 'absolute', inset: 0,
@@ -412,7 +418,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           position: 'absolute', inset: 0,
           opacity: isMap ? 0 : 1,
           pointerEvents: isMap ? 'none' : 'auto',
-          transition: 'opacity 200ms ease',
+          transition: 'opacity 300ms ease 50ms',
           overflowY: 'auto',
         }}
       >

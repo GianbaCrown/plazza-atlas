@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   description: 'An atlas of movie theaters that no longer exist.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export default function RootLayout({
   children, modal,
 }: { children: React.ReactNode; modal: React.ReactNode }) {

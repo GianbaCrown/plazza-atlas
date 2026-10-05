@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from './Logo'
+import SearchOverlay from './SearchOverlay'
 
 type Theater = {
   id: string; name: string; slug: string; lat: number; lng: number
@@ -19,28 +20,19 @@ type Props = {
 
 export default function SiteHeader({ variant, theaters = [], onTheaterSelect, view, onViewChange, onLogoClick }: Props) {
   const router = useRouter()
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Theater[]>([])
-  const [open, setOpen] = useState(false)
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const searchRef = useRef<HTMLDivElement>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
   const isMap = variant === 'map'
-
-  // Toggle reads ONLY from view prop — never from pathname
-  // Prevents toggle from jumping when theater modal opens and URL changes
   const isMapActive = view !== undefined ? view === 'map' : true
 
-
-    const pillRef = useRef<HTMLDivElement>(null)
-    const trackRefDesktop = useRef<HTMLDivElement>(null)
-    const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
-    const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
+  const trackRefDesktop = useRef<HTMLDivElement>(null)
+  const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
+  const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
   const trackRefMobile = useRef<HTMLDivElement>(null)
   const mapBtnRefMobile = useRef<HTMLButtonElement>(null)
   const listBtnRefMobile = useRef<HTMLButtonElement>(null)
-    const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
+  const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
 
-   useEffect(() => {
+  useEffect(() => {
     function measure() {
       const desktopVisible =
         !!trackRefDesktop.current &&
@@ -49,56 +41,17 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
       const track = desktopVisible ? trackRefDesktop.current : trackRefMobile.current
       const mapBtn = desktopVisible ? mapBtnRefDesktop.current : mapBtnRefMobile.current
       const listBtn = desktopVisible ? listBtnRefDesktop.current : listBtnRefMobile.current
-
       const active = isMapActive ? mapBtn : listBtn
       if (!active || !track) return
-
       const trackRect = track.getBoundingClientRect()
       const btnRect = active.getBoundingClientRect()
       if (btnRect.width === 0) return
-
       setPillStyle({ width: btnRect.width, left: btnRect.left - trackRect.left })
     }
-
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
   }, [isMapActive])
-  useEffect(() => {
-    function handleOutside(e: MouseEvent | TouchEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleOutside)
-    document.addEventListener('touchstart', handleOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleOutside)
-      document.removeEventListener('touchstart', handleOutside)
-    }
-  }, [])
-
-  function handleSearchChange(value: string) {
-    setQuery(value)
-    if (!value) { setResults([]); setOpen(false); return }
-    const lower = value.toLowerCase()
-    setResults(
-      theaters.filter((t) =>
-        t.name.toLowerCase().includes(lower) ||
-        t.city?.toLowerCase().includes(lower) ||
-        t.country?.toLowerCase().includes(lower)
-      ).slice(0, 6)
-    )
-    setOpen(true)
-  }
-
-  function handleSelect(t: Theater) {
-    setQuery(t.name)
-    setOpen(false)
-    setMobileSearchOpen(false)
-    if (onTheaterSelect) onTheaterSelect(t)
-    else router.push(`/theaters/${t.slug}`)
-  }
 
   function handleViewToggle(v: 'map' | 'list') {
     if (onViewChange) onViewChange(v)
@@ -106,146 +59,104 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
   }
 
   function handleLogoClick() {
-    if (onLogoClick) {
-      onLogoClick()
-    } else {
-      router.push('/')
-    }
+    if (onLogoClick) onLogoClick()
+    else router.push('/')
   }
 
-  // Your existing CSS classes preserved exactly
-  const inputClass = isMap
-    ? 'w-52 px-4 py-1.5 rounded-full text-xs focus:outline-none bg-zinc-900/15 backdrop-blur-sm text-white placeholder-white/50 border border-zinc-600 transition'
-    : 'w-52 px-4 py-1.5 rounded-full text-xs font-regular focus:outline-none bg-zinc-900 text-zinc-100 placeholder-gray-400 border border-zinc-600 transition'
+  function handleSelect(t: Theater) {
+    setSearchOpen(false)
+    if (onTheaterSelect) onTheaterSelect(t)
+    else router.push(`/theaters/${t.slug}`)
+  }
 
-    const Dropdown = () => open && results.length > 0 ? (
-    <ul className="absolute right-0 top-full mt-1.5 w-72 bg-zinc-900 rounded-xl shadow-2xl divide-y divide-zinc-800 overflow-hidden z-30 border border-zinc-700/60"
-      style={{ maxWidth: 'calc(100vw - 1rem)', right: 0 }}>
-      {results.map((t) => (
-        <li key={t.id}
-          className="px-4 py-2.5 hover:bg-zinc-800 cursor-pointer transition"
-          onMouseDown={() => handleSelect(t)}
-          onTouchEnd={() => handleSelect(t)}>
-          <span className="font-medium text-zinc-100 text-xs block">{t.name}</span>
-          <span className="text-zinc-500 text-xs">{t.city}, {t.country}</span>
-        </li>
-      ))}
-    </ul>
-  ) : null
+  const SearchIcon = ({ stroke }: { stroke: string }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round">
+      <circle cx="11" cy="11" r="7"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  )
 
- 
+  const Toggle = ({ trackRef, mapRef, listRef }: {
+    trackRef: React.RefObject<HTMLDivElement | null>
+    mapRef: React.RefObject<HTMLButtonElement | null>
+    listRef: React.RefObject<HTMLButtonElement | null>
+  }) => (
+    <div
+      ref={trackRef}
+      className="relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-white/15 border border-white/20"
+    >
+      <div
+        className="absolute top-0.5 bottom-0.5 rounded-full bg-white/90"
+        style={{
+          width: pillStyle.width,
+          left: pillStyle.left,
+          transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}
+      />
+      <button
+        ref={mapRef}
+        onClick={() => handleViewToggle('map')}
+        className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : 'text-white/50'}`}
+      >
+        Map
+      </button>
+      <button
+        ref={listRef}
+        onClick={() => handleViewToggle('list')}
+        className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : 'text-white/50'}`}
+      >
+        List
+      </button>
+    </div>
+  )
 
-  // Your existing wrapper classes preserved exactly
   const wrapperClass = isMap
     ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
     : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-800/90 backdrop-blur-sm border-b border-zinc-600'
 
   return (
-    <div className={wrapperClass}>
-      {/* Logo — now calls handleLogoClick instead of only setting localStorage */}
-      <button onClick={handleLogoClick} className="cursor-pointer bg-transparent border-0 p-0">
-        <Logo variant="light" />
-      </button>
-      <div className="flex-1" />
+    <>
+      <div className={wrapperClass}>
+        <button onClick={handleLogoClick} className="cursor-pointer bg-transparent border-0 p-0">
+          <Logo variant="light" />
+        </button>
+        <div className="flex-1" />
 
-      {/* Search Desktop */}
-      <div className="hidden sm:flex items-center gap-2">
-        <div ref={searchRef} className="relative w-52 flex-shrink-0">
-          <input
-            type="text"
-            value={query}
-            placeholder="Search theaters..."
-            onChange={(e) => handleSearchChange(e.target.value)}
-            onFocus={() => results.length > 0 && setOpen(true)}
-            className={inputClass + ' w-full'}
+        {/* Search icon — both viewports */}
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="cursor-pointer p-1.5 rounded-full hover:bg-white/10 transition-colors"
+          aria-label="Search"
+        >
+          <SearchIcon stroke="rgba(255,255,255,0.6)" />
+        </button>
+
+        {/* Toggle — desktop */}
+        <div className="hidden sm:block">
+          <Toggle
+            trackRef={trackRefDesktop}
+            mapRef={mapBtnRefDesktop}
+            listRef={listBtnRefDesktop}
           />
-          <Dropdown />
         </div>
-        <div className="flex-shrink-0">
-                <div
-                ref={trackRefDesktop}
-                className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
-              >
-                <div
-                  className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
-                  style={{
-                    width: pillStyle.width,
-                    left: pillStyle.left,
-                    transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  }}
-                />
-                <button
-                  ref={mapBtnRefDesktop}
-                  onClick={() => handleViewToggle('map')}
-                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-                >
-                  Map
-                </button>
-                <button
-                  ref={listBtnRefDesktop}
-                  onClick={() => handleViewToggle('list')}
-                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-                >
-                  List
-                </button>
-              </div>
+
+        {/* Toggle — mobile */}
+        <div className="sm:hidden">
+          <Toggle
+            trackRef={trackRefMobile}
+            mapRef={mapBtnRefMobile}
+            listRef={listBtnRefMobile}
+          />
         </div>
       </div>
 
-      {/* Search Mobile */}
-      <div className="flex sm:hidden items-center gap-2">
-                {mobileSearchOpen ? (
-          <div ref={searchRef} className="relative">
-            <input
-          
-              type="text"
-              value={query}
-              placeholder="Search..."
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onBlur={() => setTimeout(() => { if (!query) setMobileSearchOpen(false) }, 150)}
-              className={`${inputClass.replace('w-48', 'w-32').replace('w-52', 'w-32')} p-2 rounded font-sm`}
-        
-              style={{width: '140px' }}
-            />
-            <Dropdown />
-          </div>
-        ) : (
-          <button onClick={() => setMobileSearchOpen(true)} className="cursor-pointer p-1">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={isMap ? '#FFF' : '#FFF'} strokeWidth="2" opacity="0.5">
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </button>
-        )}
-                                          <div
-                ref={trackRefMobile}
-                className={`relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none ${isMap ? 'bg-white/15 border border-white/20' : 'bg-white/15 border border-white/20'}`}
-              >
-                <div
-                  className={`absolute top-0.5 bottom-0.5 rounded-full ${isMap ? 'bg-white/90' : 'bg-white shadow-sm'}`}
-                  style={{
-                    width: pillStyle.width,
-                    left: pillStyle.left,
-                    transition: 'left 240ms cubic-bezier(0.34, 1.56, 0.64, 1), width 240ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  }}
-                />
-                <button
-                  ref={mapBtnRefMobile}
-                  onClick={() => handleViewToggle('map')}
-                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-                >
-                  Map
-                </button>
-                <button
-                  ref={listBtnRefMobile}
-                  onClick={() => handleViewToggle('list')}
-                  className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : (isMap ? 'text-white/50' : 'text-gray-400')}`}
-                >
-                  List
-                </button>
-              </div>
-      </div>
-    </div>
+      {searchOpen && (
+        <SearchOverlay
+          theaters={theaters}
+          onSelect={handleSelect}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
+    </>
   )
 }

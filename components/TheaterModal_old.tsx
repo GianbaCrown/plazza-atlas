@@ -163,7 +163,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
         </button>
 
         {/* Content */}
-        <div className="sm:pb-24">
+        <div className="px-6 sm:px-18 py-6 pb-24">
 
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -179,7 +179,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
           ) : (
             <>
               {/* Header */}
-              <div className="px-18 py-8 mb-7 pr-8 bg-zinc-900 border border-b-zinc-800">
+              <div className="mb-7 pr-8">
 
                  {/* Still open */}
         {theater.is_open && (
@@ -236,10 +236,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
               {/* Divider 
               <div className="h-px bg-zinc-800 mb-7" />*/}
-            
-             {/* Theater Image Block */}
 
-            <div className="px-18">
                            {/* All images — carousel if multiple */}
               {images.length > 0 && (
                 <TheaterImageBlock
@@ -255,12 +252,11 @@ export default function TheaterModal({ slug }: { slug: string }) {
                   dangerouslySetInnerHTML={{ __html: theater.description }}
                 />
               )}
-            </div>
 
                             {/* Previous names */}
               {theater.theater_names?.length > 0 && (
-                <div className="px-18 py-8 border-t border-zinc-800">
-                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
+                <div className="mb-7">
+                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 mb-3">
                     Previous names
                   </p>
                   <div className="space-y-0 border border-zinc-800 rounded-lg overflow-hidden">
@@ -286,7 +282,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
               {/* Nearest theater */}
                           {theater.nearest_theater_name && (
-                <div className="px-18 py-8 mb-5 border-t border-zinc-800">
+                <div className="mb-5 border-t border-zinc-800 pt-5">
                   <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
                     Nearest theater today
                   </h2>
@@ -315,9 +311,8 @@ export default function TheaterModal({ slug }: { slug: string }) {
               )}
 
               {/* Source */}
-           
-                    {theater.theater_sources?.length > 0 && (
-                <div className="px-18 mb-5 border-t border-zinc-800 pt-5">
+                           {theater.theater_sources?.length > 0 && (
+                             <div className="mb-5 border-t border-zinc-800 pt-5">
                   <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
                     Source
                   </h2>
@@ -352,11 +347,9 @@ export default function TheaterModal({ slug }: { slug: string }) {
                             )}
                           </p>
                         </div>
-                       
                       )
                     })}
-                    
-                </div></div> 
+                </div></div>
               )}
 
             </>

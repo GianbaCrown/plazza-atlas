@@ -59,7 +59,7 @@ export default function SubmitModal() {
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4"
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 250ms ease' }}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
+      <div className="absolute inset-0 bg-black/60 bg-zinc-950/50 backdrop-blur-sm transition-opacity duration-200" onClick={close} />
 
       <div
         className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl overflow-hidden"
@@ -70,7 +70,7 @@ export default function SubmitModal() {
         }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-7 pt-7 pb-5 border-b border-zinc-800/60">
+        <div className="flex items-start bg-zinc-950 justify-between px-7 pt-7 pb-5 border-b border-zinc-800">
           <div>
             <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">Submit a theater</h1>
             <p className="text-xs text-zinc-600 mt-0.5">Found a theater we should add? Let us know.</p>
@@ -130,13 +130,14 @@ export default function SubmitModal() {
               )}
 
               <div className="flex items-center justify-between pt-1">
+                {/* Cancel link 
                 <button
                   type="button"
                   onClick={close}
                   className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer"
                 >
                   Cancel
-                </button>
+                </button> */}
                 <button
                   type="submit"
                   className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-lg text-xs font-medium cursor-pointer transition-colors"
