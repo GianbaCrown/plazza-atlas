@@ -112,7 +112,7 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
 
   const wrapperClass = isMap
     ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
-    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-800/90 backdrop-blur-sm border-b border-zinc-600'
+    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-800'
 
   return (
     <>

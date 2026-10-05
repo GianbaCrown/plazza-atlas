@@ -19,7 +19,7 @@ export default function BottomNav() {
 
   return (
     <div className="fixed bottom-4 left-4 z-30">
-      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full px-4 py-2 text-sm border border-white/10">
+      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full px-4 py-2 text-xs border border-white/10">
         <Link href="/about" className="text-white/80 hover:text-white transition px-2 py-0.5 rounded-full hover:bg-white/10 cursor-pointer">
           About
         </Link>

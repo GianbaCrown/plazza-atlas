@@ -153,10 +153,10 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
         <button
           onClick={close}
-          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700/80 backdrop-blur-sm flex items-center justify-center text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 z-20 w-6 h-6 rounded-full bg-zinc-800 hover:bg-zinc-700/80 backdrop-blur-sm flex items-center justify-center text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
           aria-label="Close"
         >
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="1" y1="1" x2="13" y2="13"/>
             <line x1="13" y1="1" x2="1" y2="13"/>
           </svg>

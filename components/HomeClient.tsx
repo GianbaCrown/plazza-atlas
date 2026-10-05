@@ -97,7 +97,7 @@ function FilterDropdown({
 
   const buttonClass = isMap
     ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 border border-white/20 text-white/80 hover:bg-white/15 transition-colors cursor-pointer backdrop-blur-sm'
-    : 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-zinc-900 border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer'
+    : 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer'
 
   const dropdownClass = isMap
     ? 'absolute top-full left-0 mt-1.5 min-w-[160px] bg-zinc-900/95 backdrop-blur-md border border-zinc-700/60 rounded-xl shadow-2xl overflow-hidden z-30'
@@ -413,7 +413,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
       {/* List view */}
       <div
-        className="bg-zinc-900"
+        className="bg-zinc-950"
         style={{
           position: 'absolute', inset: 0,
           opacity: isMap ? 0 : 1,
