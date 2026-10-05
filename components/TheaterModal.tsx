@@ -179,7 +179,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
           ) : (
             <>
               {/* Header */}
-              <div className="px-18 py-8 mb-7 pr-8 bg-zinc-900 border border-b-zinc-800">
+              <div className="px-8 md:px-12 py-8 mb-7 pr-8 bg-zinc-900 border border-b-zinc-800">
 
                  {/* Still open */}
         {theater.is_open && (
@@ -239,7 +239,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
             
              {/* Theater Image Block */}
 
-            <div className="px-18">
+            <div className="px-8 md:px-12 ">
                            {/* All images — carousel if multiple */}
               {images.length > 0 && (
                 <TheaterImageBlock
@@ -259,7 +259,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
                             {/* Previous names */}
               {theater.theater_names?.length > 0 && (
-                <div className="px-18 py-8 border-t border-zinc-800">
+                <div className="px-8 md:px-12 py-8 border-t border-zinc-800">
                   <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
                     Previous names
                   </p>
@@ -286,7 +286,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
 
               {/* Nearest theater */}
                           {theater.nearest_theater_name && (
-                <div className="px-18 py-8 mb-5 border-t border-zinc-800">
+                <div className="px-8 md:px-12 py-8 mb-5 border-t border-zinc-800">
                   <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
                     Nearest theater today
                   </h2>
@@ -317,7 +317,7 @@ export default function TheaterModal({ slug }: { slug: string }) {
               {/* Source */}
            
                     {theater.theater_sources?.length > 0 && (
-                <div className="px-18 mb-5 border-t border-zinc-800 pt-5">
+                <div className="px-8 md:px-12 mb-5 border-t border-zinc-800 pt-5">
                   <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
                     Source
                   </h2>
