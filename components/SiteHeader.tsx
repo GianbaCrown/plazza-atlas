@@ -111,13 +111,13 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
   )
 
   const wrapperClass = isMap
-    ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-3 gap-3'
-    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-3 gap-3 bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-800'
+    ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-4 gap-3'
+    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-4 gap-3 bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-800'
 
   return (
     <>
       <div className={wrapperClass}>
-        <button onClick={handleLogoClick} className="cursor-pointer bg-transparent border-0 p-0">
+        <button onClick={handleLogoClick} className="ml-3 cursor-pointer bg-transparent h-[50px]">
           <Logo variant="light" />
         </button>
         <div className="flex-1" />

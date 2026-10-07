@@ -36,17 +36,19 @@ export default function AboutModal() {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4"
-      style={{ opacity: visible ? 1 : 0, transition: 'opacity 250ms ease' }}
-    >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
+       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4">
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-150"
+        style={{ opacity: visible ? 1 : 0 }}
+        onClick={close}
+      />
 
       <div
         className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl overflow-hidden"
-        style={{
+                style={{
           transform: visible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1)',
+          opacity: visible ? 1 : 0,
+          transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1), opacity 150ms ease',
           maxHeight: '85dvh',
         }}
       >

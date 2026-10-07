@@ -135,7 +135,7 @@ export default function ImageOverlay({ src, alt, caption, credit, onClose }: Pro
             transition: lastTouchDist.current ? 'none' : 'transform 200ms ease',
             cursor: isMobile
               ? (scale > 1 ? 'zoom-out' : 'default')
-              : 'zoom-in',
+              : 'zoom-out',
             userSelect: 'none',
           }}
         />

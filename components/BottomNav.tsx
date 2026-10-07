@@ -1,11 +1,22 @@
+
+
 'use client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-export default function BottomNav() {
+type Props = {
+  onRandom?: () => void
+}
+
+export default function BottomNav({ onRandom }: Props) {
   const router = useRouter()
 
   async function handleRandom() {
+    if (onRandom) {
+      onRandom()
+      return
+    }
+    // List view fallback — open random theater modal
     const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     const { count } = await supabase

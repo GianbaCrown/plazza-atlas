@@ -98,6 +98,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
                 src={imgUrl(img.storage_path)}
                 alt={img.caption ?? theaterName}
                 className="w-full h-full object-contain cursor-zoom-in"
+                loading={currentIndex === 0 ? 'eager' : 'lazy'}
                 onClick={() => setOverlayImage(img)}
                 draggable={false}
               />
@@ -197,6 +198,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
           alt={overlayImage.caption ?? theaterName}
           caption={overlayImage.caption}
           credit={overlayImage.credit}
+          loading={currentIndex === 0 ? 'eager' : 'lazy'} // to remove?
           onClose={() => setOverlayImage(null)}
         />
       )}

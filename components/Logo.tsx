@@ -18,6 +18,7 @@ export default function Logo({ variant = 'dark' }: { variant?: 'light' | 'dark' 
       <img
         src="/logo-plazza-atlas.svg"
         alt="Plazza Atlas"
+        
         style={{
           height: '50px',
           width: 'auto',

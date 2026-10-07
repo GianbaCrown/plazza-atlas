@@ -7,7 +7,9 @@ import Supercluster from 'supercluster'
 import Image from 'next/image'
 import Link from 'next/link'
 import SiteHeader from './SiteHeader'
+import ConditionalBottomNav from './ConditionalBottomNav'
 
+ 
 
 
 type Theater = {
@@ -139,6 +141,8 @@ function FilterDropdown({
   )
 }
 
+
+
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const router = useRouter()
   const [view, setView] = useState<'map' | 'list'>('map')
@@ -156,8 +160,8 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   useEffect(() => { routerRef.current = router }, [router])
 
   useEffect(() => {
-    const saved = localStorage.getItem('plazza_view') as 'map' | 'list' | null
-    if (saved === 'list') setView('list')
+    // Always start on map view on full page load
+    localStorage.removeItem('plazza_view')
   }, [])
 
   function changeView(v: 'map' | 'list') {
@@ -194,20 +198,45 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     }, 50)
   }
 
+     async function handleRandomFly() {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { count } = await supabase
+      .from('theaters').select('id', { count: 'exact', head: true }).eq('status', 'published')
+    if (!count) return
+    const offset = Math.floor(Math.random() * count)
+    const { data } = await supabase
+      .from('theaters')
+      .select('id, name, slug, lat, lng, city, country, year_opened, year_closed, images(storage_path, is_featured)')
+      .eq('status', 'published')
+      .range(offset, offset)
+    if (data?.[0]) {
+      const raw = data[0] as any
+      const t: Theater = {
+        ...raw,
+        image_path: raw.images?.find((i: any) => i.is_featured)?.storage_path
+          ?? raw.images?.[0]?.storage_path
+          ?? null,
+      }
+      flyToTheater(t)
+    }
+  }
+
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: '/map-style.json',
+      // style: '/map-style.json',
+     style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`,
       center: [10, 50],
       zoom: 3.5,
-      transformRequest: (url) => ({ url }),
+     //  transformRequest: (url) => ({ url }),
     })
 
-        map.on('load', () => {
-      map.setProjection({ type: 'mercator' }) // or "globe" for flat view
-    })
+   //     map.on('load', () => {
+   //   map.setProjection({ type: 'mercator' }) // or "globe" for flat view
+   //  })
 
     map.on('error', (e) => {
       if (e?.error?.message?.includes('504') || e?.error?.status === 504) return
@@ -401,6 +430,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b' }}>
+      
       {/* Map layer */}
       <div style={{
         position: 'absolute', inset: 0,
@@ -459,8 +489,13 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                             {visibleTheaters.map((t) => (
-                <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer">
-                  <div className="border border-zinc-600 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
+                                <Link
+                  key={t.id}
+                  href={`/theaters/${t.slug}`}
+                  className="group cursor-pointer theater-card-appear"
+                  style={{ animationDelay: `${(visibleTheaters.indexOf(t) % 30) * 20}ms` }}
+                >
+                  <div className="border border-zinc-800 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
                     {t.image_path && (
                       <Image
                         src={imageUrl(t.image_path)!}
@@ -476,15 +511,12 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
             </div>
 
             {visibleCount < filteredTheaters.length && (
-              <div className="flex justify-center mt-8">
+                <div className="flex justify-center mt-8">
                 <button
                   onClick={() => setVisibleCount((n) => n + 30)}
-                  className="flex items-center gap-2 px-5 py-2 rounded-full border border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors cursor-pointer"
+                  className="px-5 py-2 rounded-full border border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors cursor-pointer"
                 >
                   Load more
-                  <span className="text-zinc-600">
-                    {filteredTheaters.length - visibleCount} remaining
-                  </span>
                 </button>
               </div>
             )}
@@ -503,6 +535,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           onLogoClick={() => changeView('map')}
         />
       </div>
+            <ConditionalBottomNav onRandom={isMap ? handleRandomFly : undefined} />
     </div>
   )
 }

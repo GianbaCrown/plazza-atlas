@@ -55,18 +55,19 @@ export default function SubmitModal() {
   const inputClass = 'mt-1 w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors'
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4"
-      style={{ opacity: visible ? 1 : 0, transition: 'opacity 250ms ease' }}
-    >
-      <div className="absolute inset-0 bg-black/60 bg-zinc-950/50 backdrop-blur-sm transition-opacity duration-200" onClick={close} />
-
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4">
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-150"
+        style={{ opacity: visible ? 1 : 0 }}
+        onClick={close}
+      />
       <div
         className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl overflow-hidden"
-        style={{
+               style={{
           transform: visible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1)',
-          maxHeight: '90dvh',
+          opacity: visible ? 1 : 0,
+          transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1), opacity 150ms ease',
+          maxHeight: '85dvh',
         }}
       >
         {/* Header */}

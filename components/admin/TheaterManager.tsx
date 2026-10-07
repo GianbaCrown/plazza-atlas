@@ -28,11 +28,24 @@ export default function TheaterManager() {
   const [initialImages, setInitialImages] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [theaterSources, setTheaterSources] = useState<any[]>([])
-    const [theaterNames, setTheaterNames] = useState<any[]>([])
+  const [theaterNames, setTheaterNames] = useState<any[]>([])
+  const [filterCountry, setFilterCountry] = useState('')
+  const [filterSort, setFilterSort] = useState<'alpha-asc' | 'alpha-desc' | 'newest' | 'oldest'>('newest')
+
+const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))].sort()
+
+  const filteredTheaters = theaters
+    .filter((t) => !filterCountry || t.country === filterCountry)
+    .sort((a, b) => {
+      if (filterSort === 'alpha-asc') return a.name.localeCompare(b.name)
+      if (filterSort === 'alpha-desc') return b.name.localeCompare(a.name)
+      if (filterSort === 'oldest') return a.created_at > b.created_at ? 1 : -1
+      return a.created_at < b.created_at ? 1 : -1 // newest
+    })
 
   async function loadTheaters() {
     setLoadingList(true)
-    const { data } = await supabase.from('theaters').select('id, name, city, country, status').order('created_at', { ascending: false })
+    const { data } = await supabase.from('theaters').select('id, name, city, country, status, created_at').order('created_at', { ascending: false })
     setTheaters(data ?? [])
     setLoadingList(false)
   }
@@ -195,11 +208,32 @@ export default function TheaterManager() {
         </button>
       </div>
 
+            <div className="flex gap-2 mb-4 flex-wrap">
+        <select
+          value={filterCountry}
+          onChange={(e) => setFilterCountry(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+        >
+          <option value="">All countries</option>
+          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          value={filterSort}
+          onChange={(e) => setFilterSort(e.target.value as any)}
+          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="alpha-asc">A → Z</option>
+          <option value="alpha-desc">Z → A</option>
+        </select>
+      </div>
+
       {loadingList ? (
         <p className="text-gray-400 text-sm">Loading...</p>
       ) : (
         <div className="space-y-2">
-          {theaters.map((t) => (
+          {filteredTheaters.map((t) => (
             <button key={t.id} onClick={() => openEdit(t.id)}
               className="w-full flex justify-between items-center border border-gray-200 rounded-xl p-4 hover:border-amber-300 hover:shadow-sm transition text-left bg-white">
               <div>

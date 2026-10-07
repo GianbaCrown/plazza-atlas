@@ -138,7 +138,8 @@ export default function TheaterModal({ slug }: { slug: string }) {
           bottom-0 left-0 right-0
           sm:bottom-auto sm:right-0 sm:top-0 sm:left-auto sm:h-full md:w-[60vw] sm:w-[80vw] sm:border border-l-zinc-800"
         style={{
-          maxHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? '100dvh' : '100%',
+          height: typeof window !== 'undefined' && window.innerWidth < 640 ? '100dvh' : '100%',
+          maxHeight: '100dvh',
           transform: typeof window !== 'undefined' && window.innerWidth < 640
             ? mobileTransform : desktopTransform,
           transition: isDragging.current ? 'none' : 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
@@ -146,10 +147,10 @@ export default function TheaterModal({ slug }: { slug: string }) {
         }}
       >
 
-       {/* Drag handle — visual only, no swipe gesture (conflicts with pull-to-refresh) */}
+       {/* Drag handle — visual only, no swipe gesture (conflicts with pull-to-refresh) 
         <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-8 h-0.5 rounded-full bg-zinc-700" />
-        </div>
+        </div> */}
 
         <button
           onClick={close}
