@@ -235,7 +235,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     })
 
    //     map.on('load', () => {
-   //   map.setProjection({ type: 'mercator' }) // or "globe" for flat view
+   //   map.setProjection({ type: 'mercator' }) // or "globe" for flat view - old MapLibre map
    //  })
 
     map.on('error', (e) => {
