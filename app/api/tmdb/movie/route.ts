@@ -10,12 +10,13 @@ export async function GET(req: Request) {
   if (!res.ok) return NextResponse.json(null)
   const data = await res.json()
   const director = data.credits?.crew?.find((c: any) => c.job === 'Director')?.name ?? null
-  return NextResponse.json({
+    return NextResponse.json({
     title: data.title,
     year: data.release_date?.slice(0, 4) ?? null,
     overview: data.overview ?? null,
     poster_path: data.poster_path ?? null,
     director,
     tmdb_id: data.id,
+    popularity: data.popularity ?? 0,
   })
 }

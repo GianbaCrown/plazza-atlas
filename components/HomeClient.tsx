@@ -9,6 +9,7 @@ import Link from 'next/link'
 import SiteHeader from './SiteHeader'
 import ConditionalBottomNav from './ConditionalBottomNav'
 
+
  
 
 
@@ -33,6 +34,7 @@ function imageUrl(path?: string | null) {
 function hoverPopupHTML(t: Theater) {
   const img = imageUrl(t.image_path)
   const dates = dateRange(t)
+ 
   return `
     <div style="width:220px;font-family:system-ui,sans-serif">
       ${img ? `
@@ -96,6 +98,25 @@ function FilterDropdown({
       document.removeEventListener('touchstart', handleOutside)
     }
   }, [])
+
+
+    useEffect(() => {
+    const pending = sessionStorage.getItem('flyToTheater')
+    if (pending) {
+      sessionStorage.removeItem('flyToTheater')
+      try {
+        const t = JSON.parse(pending) as Theater
+        // Wait for map to initialize
+        const attempt = () => {
+          if (mapRef.current) flyToTheater(t)
+          else setTimeout(attempt, 100)
+        }
+        setTimeout(attempt, 300)
+      } catch {}
+    }
+  }, [])
+
+  
 
   const buttonClass = isMap
     ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 border border-white/20 text-white/80 hover:bg-white/15 transition-colors cursor-pointer backdrop-blur-sm'
@@ -231,8 +252,11 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
      style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`,
       center: [10, 50],
       zoom: 3.5,
+        attributionControl: false,
      //  transformRequest: (url) => ({ url }),
     })
+
+     map.addControl(new maplibregl.AttributionControl({ compact: true }))
 
    //     map.on('load', () => {
    //   map.setProjection({ type: 'mercator' }) // or "globe" for flat view - old MapLibre map
@@ -383,6 +407,10 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
 
     // Register each event exactly once
     map.on('load', renderClusters)
+        map.on('load', () => {
+      renderClusters()
+      setMapReady(true)
+    })
     map.on('moveend', renderClusters)
 
     let resizeTimer: ReturnType<typeof setTimeout>
@@ -425,6 +453,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     })
 
   const visibleTheaters = filteredTheaters.slice(0, visibleCount)
+   const [mapReady, setMapReady] = useState(false)
 
   const isMap = view === 'map'
 
@@ -432,13 +461,20 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b' }}>
       
       {/* Map layer */}
-      <div style={{
+            <div style={{
         position: 'absolute', inset: 0,
         opacity: isMap ? 1 : 0,
         pointerEvents: isMap ? 'auto' : 'none',
-        transition: 'opacity 150ms ease',
+        transition: 'opacity 300ms ease 50ms',
       }}>
-        <div ref={mapContainer} style={{ position: 'absolute', inset: 0 }} />
+        <div
+          ref={mapContainer}
+          style={{
+            position: 'absolute', inset: 0,
+            opacity: mapReady ? 1 : 0,
+            transition: mapReady ? 'opacity 600ms ease' : 'none',
+          }}
+        />
       </div>
 
       {/* List view */}
