@@ -314,6 +314,12 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
 
+      function openPopup(theater: Theater) {
+      const point = map.project([theater.lng, theater.lat])
+      setPopup({ x: point.x, y: point.y, theater })
+    }
+
+
     
 
     function scheduleClose() {
