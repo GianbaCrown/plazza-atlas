@@ -34,10 +34,14 @@ export default function BottomNav({ onRandom }: Props) {
         <Link href="/about" className="text-white/80 hover:text-white transition px-2 py-0.5 rounded-full hover:bg-white/10 cursor-pointer">
           About
         </Link>
-        <span className="text-white/20">·</span>
+
+        
+        {/*  <span className="text-white/20">·</span>
+       
+       
         <Link href="/submit" className="text-white/80 hover:text-white transition px-2 py-0.5 rounded-full hover:bg-white/10 cursor-pointer">
           Contact
-        </Link>
+        </Link>*/}
         <span className="text-white/20">·</span>
         <button
           onClick={handleRandom}

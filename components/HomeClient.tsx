@@ -314,10 +314,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
 
-    function openPopup(theater: Theater) {
-      const point = map.project([theater.lng, theater.lat])
-      setPopup({ x: point.x, y: point.y, theater })
-    }
+    
 
     function scheduleClose() {
       closeTimer = setTimeout(() => popupRef.current?.remove(), 2000)
@@ -331,11 +328,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       if (!preventMapClose) popupRef.current?.remove()
     })
 
-      function collapseAttribution() {
-      const attrib = mapContainer.current?.closest('.maplibregl-map')
-        ?.querySelector('.maplibregl-ctrl-attrib')
-      attrib?.classList.remove('maplibregl-compact-show')
-    }
+   
 
     function renderClusters() {
       markersOnScreen.forEach((m) => m.remove())
@@ -356,7 +349,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
          el.onclick = (e) => {
             e.stopPropagation()
-            collapseAttribution()
+
             const leaves = index.getLeaves(c.properties.cluster_id, Infinity)
             if (leaves.length > 0) {
               const lngs = leaves.map((l: any) => l.geometry.coordinates[0])
@@ -396,7 +389,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
             e.stopPropagation()
             cancelClose()
             openPopup(theater)
-            collapseAttribution()
+   
           }
         }
 
