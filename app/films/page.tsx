@@ -12,7 +12,7 @@ type Movie = {
 
 type SortOption = 'newest' | 'oldest' | 'alpha-asc' | 'alpha-desc' | 'popular'
 
-const decades = Array.from({ length: 11 }, (_, i) => 1920 + i * 10)
+ 
 
 function FilterDropdown({
   label, value, options, onChange,
@@ -22,9 +22,12 @@ function FilterDropdown({
   options: { label: string; value: string }[]
   onChange: (v: string) => void
 }) {
+
+
+  
   const [open, setOpen] = useState(false)
   const selected = options.find((o) => o.value === value)
-
+ 
   return (
     <div className="relative">
       <button
@@ -78,6 +81,9 @@ export default function FilmsPage() {
     const res = await fetch(`/api/films?${params}`)
     const data = await res.json()
 
+    
+
+
     setMovies((prev) => reset ? data.movies : [...prev, ...data.movies])
     setTotal(data.total)
     setOffset(off + 30)
@@ -94,6 +100,15 @@ export default function FilmsPage() {
     if (key === 'decade') setDecade(value)
     else setSort(value as SortOption)
   }
+
+  const [availableDecades, setAvailableDecades] = useState<number[]>([])
+
+  useEffect(() => {
+    fetch('/api/films/decades')
+      .then((r) => r.json())
+      .then((data) => setAvailableDecades(data.decades ?? []))
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="min-h-screen bg-zinc-900 pb-24">
@@ -121,7 +136,7 @@ export default function FilmsPage() {
           onChange={(v) => handleFilterChange('decade', v)}
           options={[
             { label: 'All decades', value: '' },
-            ...decades.map((d) => ({ label: `${d}s`, value: String(d) })),
+            ...availableDecades.map((d) => ({ label: `${d}s`, value: String(d) })),
           ]}
         />
         <FilterDropdown
@@ -195,15 +210,9 @@ export default function FilmsPage() {
 
       {/* Movie overlay with theater list */}
       {selectedMovie && (
-        <MovieOverlayFull
+               <MovieOverlayFull
           movie={selectedMovie}
           onClose={() => setSelectedMovie(null)}
-          onFlyToTheater={(t) => {
-            setSelectedMovie(null)
-            // Navigate to home and fly — store in sessionStorage for pickup
-            sessionStorage.setItem('flyToTheater', JSON.stringify(t))
-            window.location.href = '/'
-          }}
         />
       )}
     </div>

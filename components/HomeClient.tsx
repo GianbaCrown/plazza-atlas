@@ -100,21 +100,6 @@ function FilterDropdown({
   }, [])
 
 
-    useEffect(() => {
-    const pending = sessionStorage.getItem('flyToTheater')
-    if (pending) {
-      sessionStorage.removeItem('flyToTheater')
-      try {
-        const t = JSON.parse(pending) as Theater
-        // Wait for map to initialize
-        const attempt = () => {
-          if (mapRef.current) flyToTheater(t)
-          else setTimeout(attempt, 100)
-        }
-        setTimeout(attempt, 300)
-      } catch {}
-    }
-  }, [])
 
   
 
@@ -125,6 +110,8 @@ function FilterDropdown({
   const dropdownClass = isMap
     ? 'absolute top-full left-0 mt-1.5 min-w-[160px] bg-zinc-900/95 backdrop-blur-md border border-zinc-700/60 rounded-xl shadow-2xl overflow-hidden z-30'
     : 'absolute top-full left-0 mt-1.5 min-w-[160px] bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-30'
+
+ 
 
   return (
     <div ref={ref} className="relative">
@@ -252,11 +239,11 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
      style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`,
       center: [10, 50],
       zoom: 3.5,
-        attributionControl: false,
+        attributionControl: true,
      //  transformRequest: (url) => ({ url }),
     })
 
-     map.addControl(new maplibregl.AttributionControl({ compact: true }))
+   
 
    //     map.on('load', () => {
    //   map.setProjection({ type: 'mercator' }) // or "globe" for flat view - old MapLibre map

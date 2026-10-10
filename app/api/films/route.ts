@@ -10,23 +10,24 @@ export async function GET(req: Request) {
 
   const supabase = await createClient()
 
-  // Get all movies that appear in at least one published theater
+  // Get movie IDs that appear in published theaters only
+  const { data: linkedIds } = await supabase
+    .from('image_movies')
+    .select('movie_id, images!inner(theaters!inner(id))')
+    .eq('images.theaters.status', 'published')
+
+  if (!linkedIds?.length) return NextResponse.json({ movies: [], total: 0 })
+
+  const movieIds = [...new Set(linkedIds.map((r: any) => r.movie_id))]
+
   let query = supabase
     .from('movies')
-    .select(`
-      id, tmdb_id, title, year, poster_path,
-      image_movies!inner (
-        images!inner (
-          theaters!inner ( id, name, slug, city, country, lat, lng, status )
-        )
-      )
-    `, { count: 'exact' })
-    .eq('image_movies.images.theaters.status', 'published')
+    .select('id, tmdb_id, title, year, poster_path, popularity', { count: 'exact' })
+    .in('id', movieIds)
+    .not('poster_path', 'is', null) // skip movies with no poster
 
   if (decade) {
-    const from = Number(decade)
-    const to = from + 9
-    query = query.gte('year', from).lte('year', to)
+    query = query.gte('year', Number(decade)).lte('year', Number(decade) + 9)
   }
 
   if (sort === 'newest') query = query.order('year', { ascending: false })
@@ -35,9 +36,7 @@ export async function GET(req: Request) {
   else if (sort === 'alpha-desc') query = query.order('title', { ascending: false })
   else if (sort === 'popular') query = query.order('popularity', { ascending: false })
 
-  const { data, count, error } = await query.range(offset, offset + limit - 1)
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { data, count } = await query.range(offset, offset + limit - 1)
 
   return NextResponse.json({ movies: data ?? [], total: count ?? 0 })
 }

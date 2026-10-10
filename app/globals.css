@@ -174,3 +174,17 @@ button, a, [role="button"] {
 .theater-card-appear {
   animation: fadeInUp 300ms ease forwards;
 }
+
+/* MapLibre attribution — collapsed by default */
+.maplibregl-ctrl-attrib:not(.maplibregl-compact-show) {
+  display: none;
+}
+
+.maplibregl-ctrl-attrib-button {
+  display: block !important;
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(9, 9, 11, 0.7) !important;
+  border-radius: 50% !important;
+}

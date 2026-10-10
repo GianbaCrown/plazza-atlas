@@ -18,7 +18,7 @@ type Movie = {
 type Props = {
   movie: Movie
   onClose: () => void
-  onFlyToTheater?: (t: Theater) => void
+
 }
 
 type FullMovie = {
@@ -30,7 +30,7 @@ type FullMovie = {
   tmdb_id: number
 }
 
-export default function MovieOverlayFull({ movie, onClose, onFlyToTheater }: Props) {
+export default function MovieOverlayFull({ movie, onClose }: Props) {
   const [full, setFull] = useState<FullMovie | null>(null)
   const [theaters, setTheaters] = useState<Theater[]>([])
   const [visible, setVisible] = useState(false)
@@ -39,49 +39,40 @@ export default function MovieOverlayFull({ movie, onClose, onFlyToTheater }: Pro
   useEffect(() => {
     setMounted(true)
 
-    const fetchAll = async () => {
-      const [movieRes, theatersRes] = await Promise.all([
-        movie.tmdb_id ? fetch(`/api/tmdb/movie?id=${movie.tmdb_id}`).then(r => r.json()) : Promise.resolve(null),
+      const fetchAll = async () => {
+      const [movieData, theaterData] = await Promise.all([
+        movie.tmdb_id
+          ? fetch(`/api/tmdb/movie?id=${movie.tmdb_id}`).then(r => r.json())
+          : Promise.resolve(null),
         fetchTheaters(),
       ])
-      setFull(movieRes)
-      setTheaters(theatersRes)
+      setFull(movieData)
+      setTheaters(theaterData)
       requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
     }
 
     fetchAll()
   }, [movie.tmdb_id])
 
-  async function fetchTheaters(): Promise<Theater[]> {
+   async function fetchTheaters(): Promise<Theater[]> {
     if (!movie.tmdb_id) return []
     const supabase = createClient()
 
-    // Get all image_movies entries for this movie
-    const { data: movieData } = await supabase
-      .from('movies')
-      .select('id')
-      .eq('tmdb_id', movie.tmdb_id)
-      .single()
-
-    if (!movieData) return []
-
-    const { data: links } = await supabase
+    const { data } = await supabase
       .from('image_movies')
-      .select('image_id')
-      .eq('movie_id', movieData.id)
+      .select(`
+        images!inner ( theater_id ),
+        movies!inner ( tmdb_id )
+      `)
+      .eq('movies.tmdb_id', movie.tmdb_id)
 
-    if (!links?.length) return []
+    if (!data?.length) return []
 
-    const imageIds = links.map((l: any) => l.image_id)
+    const theaterIds = [...new Set(
+      data.map((r: any) => r.images?.theater_id).filter(Boolean)
+    )]
 
-    const { data: imageRows } = await supabase
-      .from('images')
-      .select('theater_id')
-      .in('id', imageIds)
-
-    if (!imageRows?.length) return []
-
-    const theaterIds = [...new Set(imageRows.map((r: any) => r.theater_id))]
+    if (!theaterIds.length) return []
 
     const { data: theaterRows } = await supabase
       .from('theaters')
@@ -111,9 +102,9 @@ export default function MovieOverlayFull({ movie, onClose, onFlyToTheater }: Pro
 
   function handleTheaterClick(t: Theater) {
     handleClose()
-    if (onFlyToTheater) {
-      setTimeout(() => onFlyToTheater(t), 250)
-    }
+    setTimeout(() => {
+      window.location.href = `/theaters/${t.slug}`
+    }, 220)
   }
 
   const poster = full?.poster_path ?? movie.poster_path
