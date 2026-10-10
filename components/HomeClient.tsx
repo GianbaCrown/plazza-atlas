@@ -239,7 +239,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
      style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`,
       center: [10, 50],
       zoom: 3.5,
-        attributionControl: true,
+      attributionControl: { compact: true },
      //  transformRequest: (url) => ({ url }),
     })
 
