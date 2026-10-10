@@ -136,7 +136,7 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
     let { data: existing } = await supabase.from('movies').select('id').eq('tmdb_id', movie.tmdb_id).maybeSingle()
     let movieId = existing?.id
     if (!movieId) {
-          const { data: created } = await supabase.from('movies')
+          const { data: created, error: createError } = await supabase.from('movies')
         .insert({
           tmdb_id: movie.tmdb_id,
           title: movie.title,
@@ -145,7 +145,7 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
           popularity: movie.popularity ?? 0,
         })
         .select('id').single()
-      if (error) { alert(error.message); return }
+      if (createError) { alert(createError.message); return }
       movieId = created.id
     }
     const { error } = await supabase.from('image_movies').insert({ image_id: imageId, movie_id: movieId })
