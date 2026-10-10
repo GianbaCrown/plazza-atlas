@@ -1,15 +1,16 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
-export async function POST() {
+// Call this from browser while logged into admin: /api/admin/backfill-popularity
+export async function GET() {
   const supabase = createAdminClient()
   const { data: movies } = await supabase
     .from('movies')
     .select('id, tmdb_id')
     .not('tmdb_id', 'is', null)
-    .eq('popularity', 0)
+    .or('popularity.is.null,popularity.eq.0')
 
-  if (!movies?.length) return NextResponse.json({ updated: 0 })
+  if (!movies?.length) return NextResponse.json({ updated: 0, message: 'Nothing to update' })
 
   let updated = 0
   for (const movie of movies) {
@@ -28,5 +29,5 @@ export async function POST() {
     } catch {}
   }
 
-  return NextResponse.json({ updated })
+  return NextResponse.json({ updated, message: `Updated ${updated} movies` })
 }

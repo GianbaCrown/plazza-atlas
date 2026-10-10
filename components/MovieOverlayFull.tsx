@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 type Theater = {
   id: string; name: string; slug: string; city?: string; country?: string
@@ -35,6 +36,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
   const [theaters, setTheaters] = useState<Theater[]>([])
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
+    const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -103,7 +105,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
   function handleTheaterClick(t: Theater) {
     handleClose()
     setTimeout(() => {
-      window.location.href = `/theaters/${t.slug}`
+      router.push(`/theaters/${t.slug}`)
     }, 220)
   }
 

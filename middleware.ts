@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow gate page and API
-  if (pathname === '/gate' || pathname.startsWith('/api/gate')) {
+  if (pathname === '/gate' || pathname.startsWith('/api/gate') || pathname.startsWith('/api/admin/backfill')) {
     return NextResponse.next()
   }
 
