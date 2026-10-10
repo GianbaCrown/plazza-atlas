@@ -198,7 +198,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
           alt={overlayImage.caption ?? theaterName}
           caption={overlayImage.caption}
           credit={overlayImage.credit}
-          loading={currentIndex === 0 ? 'eager' : 'lazy'} // to remove?
+          // loading={currentIndex === 0 ? 'eager' : 'lazy'} // to remove?
           onClose={() => setOverlayImage(null)}
         />
       )}
