@@ -314,6 +314,11 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
 
+    function openPopup(theater: Theater) {
+      const point = map.project([theater.lng, theater.lat])
+      setPopup({ x: point.x, y: point.y, theater })
+    }
+
     function scheduleClose() {
       closeTimer = setTimeout(() => popupRef.current?.remove(), 2000)
     }
@@ -326,7 +331,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       if (!preventMapClose) popupRef.current?.remove()
     })
 
-        function collapseAttribution() {
+      function collapseAttribution() {
       const attrib = mapContainer.current?.closest('.maplibregl-map')
         ?.querySelector('.maplibregl-ctrl-attrib')
       attrib?.classList.remove('maplibregl-compact-show')
