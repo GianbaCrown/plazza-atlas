@@ -326,6 +326,12 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
       if (!preventMapClose) popupRef.current?.remove()
     })
 
+        function collapseAttribution() {
+      const attrib = mapContainer.current?.closest('.maplibregl-map')
+        ?.querySelector('.maplibregl-ctrl-attrib')
+      attrib?.classList.remove('maplibregl-compact-show')
+    }
+
     function renderClusters() {
       markersOnScreen.forEach((m) => m.remove())
       markersOnScreen.length = 0
@@ -343,8 +349,9 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         if (c.properties.cluster) {
           el.textContent = String(c.properties.point_count)
           el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
-          el.onclick = (e) => {
+         el.onclick = (e) => {
             e.stopPropagation()
+            collapseAttribution()
             const leaves = index.getLeaves(c.properties.cluster_id, Infinity)
             if (leaves.length > 0) {
               const lngs = leaves.map((l: any) => l.geometry.coordinates[0])
@@ -382,7 +389,9 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           el.onmouseleave = scheduleClose
           el.onclick = (e) => {
             e.stopPropagation()
-            showPopup()
+            cancelClose()
+            openPopup(theater)
+            collapseAttribution()
           }
         }
 
