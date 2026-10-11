@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import TheaterImageBlock from './TheaterImageBlock'
 
-export default function TheaterModal({ slug }: { slug: string }) {
+export default function TheaterModal({ slug, onClose }: { slug: string; onClose?: () => void }) {
   const router = useRouter()
   const [theater, setTheater] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -85,10 +85,12 @@ export default function TheaterModal({ slug }: { slug: string }) {
       })
   }, [slug])
 
-  function close() {
+   function close() {
     setMounted(false)
-    setDragOffset(0)
-    setTimeout(() => router.back(), 220)
+    setTimeout(() => {
+      if (onClose) onClose()
+      else router.back()
+    }, 220)
   }
 
   function handleTouchStart(e: React.TouchEvent) {

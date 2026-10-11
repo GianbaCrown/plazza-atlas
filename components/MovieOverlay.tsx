@@ -116,8 +116,10 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
   }, [])
 
   function handleClose() {
-    setVisible(false)
-    setTimeout(onClose, 200)
+    requestAnimationFrame(() => {
+      setVisible(false)
+    })
+    setTimeout(onClose, 220)
   }
 
   const poster = full?.poster_path ?? movie.poster_path
@@ -134,17 +136,18 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       onTouchMove={(e) => e.preventDefault()}
     >
       <div
-        className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm transition-opacity duration-150"
-        style={{ opacity: visible ? 1 : 0 }}
+        className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+        style={{ opacity: visible ? 1 : 0, transition: 'opacity 200ms ease' }}
         onClick={handleClose}
       />
 
       <div
         className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
-                        style={{
-          transform: visible ? 'translateY(0)' : 'translateY(16px)',
-          transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
-        }}
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(16px)',
+            transition: 'opacity 200ms ease, transform 200ms cubic-bezier(0.32, 0, 0.18, 1)',
+          }}
         onClick={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >

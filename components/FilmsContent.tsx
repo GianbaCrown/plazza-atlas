@@ -75,8 +75,8 @@ export default function FilmsContent() {
   useEffect(() => { setOffset(0); fetch30(0, true) }, [decade, sort])
 
   return (
-    <div className="h-full overflow-y-auto pb-24">
-      <div className="max-w-6xl mx-auto px-4 py-5 flex gap-2 flex-wrap">
+    <div className="h-full overflow-y-auto pb-24 pt-32">
+      <div className="max-w-6xl mx-auto px-4 py-6 flex gap-2 flex-wrap">
         <FilterDropdown
           label="All decades" value={decade}
           onChange={setDecade}
@@ -116,7 +116,7 @@ export default function FilmsContent() {
                     <img
                       src={`https://image.tmdb.org/t/p/w342${m.poster_path}`}
                       alt={m.title}
-                      className="w-full aspect-[2/3] object-cover rounded-lg border border-zinc-800 transition-all duration-200 group-hover:border-zinc-600 group-hover:scale-[1.02]"
+                      className="w-full aspect-[2/3] object-cover rounded-sm border border-zinc-800 transition-all duration-200 group-hover:border-zinc-600 group-hover:scale-[1.02]"
                     />
                   ) : (
                     <div className="w-full aspect-[2/3] bg-zinc-800 rounded-lg flex items-center justify-center text-[10px] text-zinc-600">No poster</div>

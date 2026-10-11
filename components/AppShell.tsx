@@ -9,6 +9,7 @@ import SiteHeader from './SiteHeader'
 import ConditionalBottomNav from './ConditionalBottomNav'
 import SearchOverlay from './SearchOverlay'
 import FilmsContent from './FilmsContent'
+import TheaterModal from './TheaterModal'
 
 type Theater = {
   id: string; name: string; slug: string; lat: number; lng: number
@@ -104,12 +105,12 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
   const [selectedDecade, setSelectedDecade] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [visibleCount, setVisibleCount] = useState(30)
-
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
   const theatersRef = useRef<Theater[]>(theaters)
   const routerRef = useRef({ push: (url: string) => { window.location.href = url } })
+  const [modalSlug, setModalSlug] = useState<string | null>(null)
 
   useEffect(() => { theatersRef.current = theaters }, [theaters])
 
@@ -178,11 +179,15 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
     mapRef.current = map
     popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 16, maxWidth: '240px' })
 
-    popupRef.current.on('open', () => {
+       popupRef.current.on('open', () => {
       const el = popupRef.current!.getElement()
       el.querySelectorAll('[data-theater-link]').forEach((link) => {
         const a = link as HTMLAnchorElement
-        a.onclick = (e) => { e.preventDefault(); window.location.href = `/theaters/${a.dataset.theaterLink}` }
+             a.onclick = (e) => {
+          e.preventDefault()
+          const slug = a.dataset.theaterLink
+          if (slug) setModalSlug(slug)
+        }
       })
     })
 
@@ -312,9 +317,9 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
         <div ref={mapContainer} style={{ position: 'absolute', inset: 0, opacity: mapReady ? 1 : 0, transition: mapReady ? 'opacity 600ms ease' : 'none' }} />
       </div>
 
-      {/* List */}
+      {/* Theatres */}
       <div className="bg-zinc-900" style={{ position: 'absolute', inset: 0, opacity: isList ? 1 : 0, pointerEvents: isList ? 'auto' : 'none', transition: 'opacity 300ms ease 50ms', overflowY: 'auto' }}>
-        <div className="pb-20 pt-16">
+        <div className="pb-20 pt-32">
           <div className="max-w-6xl mx-auto px-4 py-6">
             <div className="flex gap-2 mb-6 flex-wrap">
               <FilterDropdown label="All countries" value={selectedCountry} onChange={(v) => { setSelectedCountry(v); setVisibleCount(30) }}
@@ -347,8 +352,10 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
 
       {/* Films */}
       <div className="bg-zinc-900" style={{ position: 'absolute', inset: 0, opacity: isFilms ? 1 : 0, pointerEvents: isFilms ? 'auto' : 'none', transition: 'opacity 300ms ease 50ms' }}>
-        <div style={{ position: 'absolute', inset: 0, top: '52px' }}>
+        <div style={{ position: 'absolute', inset: 0, top: '0px' }}>
+     
           <FilmsContent />
+  
         </div>
       </div>
 
@@ -370,6 +377,13 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       {searchOpen && (
         <SearchOverlay theaters={theaters} onSelect={(t) => { setSearchOpen(false); flyToTheater(t) }} onClose={() => setSearchOpen(false)} />
       )}
+
+
+      {modalSlug && (
+        <TheaterModal slug={modalSlug} onClose={() => setModalSlug(null)} />
+      )}
+
+
     </div>
   )
 }
