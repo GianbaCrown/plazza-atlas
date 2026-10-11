@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import SiteHeader from './SiteHeader'
 import ConditionalBottomNav from './ConditionalBottomNav'
+import SearchOverlay from './SearchOverlay'
 
 
  
@@ -100,7 +101,16 @@ function FilterDropdown({
   }, [])
 
 
-
+      function openPopup(theater: Theater) {
+        if (!popupRef.current) return
+        popupRef.current
+          .setLngLat([theater.lng, theater.lat])
+          .setHTML(hoverPopupHTML(theater))
+          .addTo(map)
+        const popupEl = popupRef.current.getElement()
+        popupEl.onmouseenter = cancelClose
+        popupEl.onmouseleave = scheduleClose
+      }
   
 
   const buttonClass = isMap
@@ -153,7 +163,7 @@ function FilterDropdown({
 
 export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const router = useRouter()
-  const [view, setView] = useState<'map' | 'list'>('map')
+    const [view, setView] = useState<'map' | 'list' | 'films'>('map')
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedDecade, setSelectedDecade] = useState('')
   const mapContainer = useRef<HTMLDivElement>(null)
@@ -163,16 +173,23 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const routerRef = useRef(router)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'alpha'>('newest')
   const [visibleCount, setVisibleCount] = useState(30)
+    const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => { theatersRef.current = theaters }, [theaters])
   useEffect(() => { routerRef.current = router }, [router])
 
   useEffect(() => {
-    // Always start on map view on full page load
-    localStorage.removeItem('plazza_view')
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('view') === 'list') {
+      setView('list')
+    }
   }, [])
 
-  function changeView(v: 'map' | 'list') {
+  function changeView(v: 'map' | 'list' | 'films') {
+    if (v === 'films') {
+      router.push('/films')
+      return
+    }
     setView(v)
     localStorage.setItem('plazza_view', v)
   }
@@ -314,11 +331,7 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
     let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
 
-      function openPopup(theater: Theater) {
-      const point = map.project([theater.lng, theater.lat])
-      setPopup({ x: point.x, y: point.y, theater })
-    }
-
+    
 
     
 
@@ -455,7 +468,8 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
   const visibleTheaters = filteredTheaters.slice(0, visibleCount)
    const [mapReady, setMapReady] = useState(false)
 
-  const isMap = view === 'map'
+   const isMap = view === 'map'
+  const isList = view === 'list'
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b' }}>
@@ -482,8 +496,8 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
         className="bg-zinc-950"
         style={{
           position: 'absolute', inset: 0,
-          opacity: isMap ? 0 : 1,
-          pointerEvents: isMap ? 'none' : 'auto',
+          opacity: isList ? 1 : 0,
+        pointerEvents: isList ? 'auto' : 'none',
           transition: 'opacity 300ms ease 50ms',
           overflowY: 'auto',
         }}
@@ -569,9 +583,24 @@ export default function HomeClient({ theaters }: { theaters: Theater[] }) {
           view={view}
           onViewChange={changeView}
           onLogoClick={() => changeView('map')}
+          onSearchOpen={() => {/* setSearchOpen(true) */}}
         />
       </div>
-            <ConditionalBottomNav onRandom={isMap ? handleRandomFly : undefined} />
+                  <ConditionalBottomNav
+        onRandom={isMap ? handleRandomFly : undefined}
+        onSearchOpen={() => setSearchOpen(true)}
+      />
+
+      {searchOpen && (
+        <SearchOverlay
+          theaters={theaters}
+          onSelect={(t) => {
+            setSearchOpen(false)
+            flyToTheater(t)
+          }}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
     </div>
   )
 }

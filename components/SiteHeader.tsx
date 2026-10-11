@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from './Logo'
 import SearchOverlay from './SearchOverlay'
@@ -9,30 +9,40 @@ type Theater = {
   city?: string; country?: string
 }
 
+type ViewType = 'map' | 'list' | 'films'
+
 type Props = {
   variant: 'map' | 'page'
   theaters?: Theater[]
   onTheaterSelect?: (t: Theater) => void
-  view?: 'map' | 'list'
-  onViewChange?: (v: 'map' | 'list') => void
+  view?: ViewType
+  onViewChange?: (v: ViewType) => void
   onLogoClick?: () => void
+  onSearchOpen?: () => void
 }
 
-export default function SiteHeader({ variant, theaters = [], onTheaterSelect, view, onViewChange, onLogoClick }: Props) {
+export default function SiteHeader({
+  variant, theaters = [], onTheaterSelect, view, onViewChange, onLogoClick, onSearchOpen,
+}: Props) {
   const router = useRouter()
-  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Search — kept in code but hidden from UI
+  // const [searchOpen, setSearchOpen] = useState(false)
+
   const isMap = variant === 'map'
-  const isMapActive = view !== undefined ? view === 'map' : true
+  const activeView: ViewType = view ?? 'map'
 
   const trackRefDesktop = useRef<HTMLDivElement>(null)
+  const trackRefMobile = useRef<HTMLDivElement>(null)
   const mapBtnRefDesktop = useRef<HTMLButtonElement>(null)
   const listBtnRefDesktop = useRef<HTMLButtonElement>(null)
-  const trackRefMobile = useRef<HTMLDivElement>(null)
+  const filmsBtnRefDesktop = useRef<HTMLButtonElement>(null)
   const mapBtnRefMobile = useRef<HTMLButtonElement>(null)
   const listBtnRefMobile = useRef<HTMLButtonElement>(null)
+  const filmsBtnRefMobile = useRef<HTMLButtonElement>(null)
   const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function measure() {
       const desktopVisible =
         !!trackRefDesktop.current &&
@@ -41,7 +51,13 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
       const track = desktopVisible ? trackRefDesktop.current : trackRefMobile.current
       const mapBtn = desktopVisible ? mapBtnRefDesktop.current : mapBtnRefMobile.current
       const listBtn = desktopVisible ? listBtnRefDesktop.current : listBtnRefMobile.current
-      const active = isMapActive ? mapBtn : listBtn
+      const filmsBtn = desktopVisible ? filmsBtnRefDesktop.current : filmsBtnRefMobile.current
+
+      const active =
+        activeView === 'map' ? mapBtn :
+        activeView === 'list' ? listBtn :
+        filmsBtn
+
       if (!active || !track) return
       const trackRect = track.getBoundingClientRect()
       const btnRect = active.getBoundingClientRect()
@@ -51,10 +67,11 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
-  }, [isMapActive])
+  }, [activeView])
 
-  function handleViewToggle(v: 'map' | 'list') {
+  function handleViewToggle(v: ViewType) {
     if (onViewChange) onViewChange(v)
+    else if (v === 'films') router.push('/films')
     else router.push('/')
   }
 
@@ -63,23 +80,21 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
     else router.push('/')
   }
 
-  function handleSelect(t: Theater) {
-    setSearchOpen(false)
-    if (onTheaterSelect) onTheaterSelect(t)
-    else router.push(`/theaters/${t.slug}`)
-  }
+  // Search icon — commented out from UI but kept for future use
+  // const SearchIcon = ({ stroke }: { stroke: string }) => (
+  //   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round">
+  //     <circle cx="11" cy="11" r="7"/>
+  //     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  //   </svg>
+  // )
 
-  const SearchIcon = ({ stroke }: { stroke: string }) => (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round">
-      <circle cx="11" cy="11" r="7"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-  )
-
-  const Toggle = ({ trackRef, mapRef, listRef }: {
+  const Toggle = ({
+    trackRef, mapRef, listRef, filmsRef,
+  }: {
     trackRef: React.RefObject<HTMLDivElement | null>
     mapRef: React.RefObject<HTMLButtonElement | null>
     listRef: React.RefObject<HTMLButtonElement | null>
+    filmsRef: React.RefObject<HTMLButtonElement | null>
   }) => (
     <div
       ref={trackRef}
@@ -96,21 +111,28 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
       <button
         ref={mapRef}
         onClick={() => handleViewToggle('map')}
-        className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${isMapActive ? 'text-gray-900' : 'text-white/50'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-gray-900' : 'text-white/50'}`}
       >
         Map
       </button>
       <button
         ref={listRef}
         onClick={() => handleViewToggle('list')}
-        className={`relative z-10 px-4 py-1 rounded-full transition-colors duration-150 cursor-pointer ${!isMapActive ? 'text-gray-900' : 'text-white/50'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-gray-900' : 'text-white/50'}`}
       >
-        List
+        Theatres
+      </button>
+      <button
+        ref={filmsRef}
+        onClick={() => handleViewToggle('films')}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-gray-900' : 'text-white/50'}`}
+      >
+        Films
       </button>
     </div>
   )
 
-  const wrapperClass = isMap
+ const wrapperClass = isMap
     ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-4 gap-3'
     : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-4 gap-3 bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-800'
 
@@ -122,41 +144,45 @@ export default function SiteHeader({ variant, theaters = [], onTheaterSelect, vi
         </button>
         <div className="flex-1" />
 
-        {/* Search icon — both viewports */}
-        <button
-          onClick={() => setSearchOpen(true)}
+        {/* Search icon — hidden but kept for future use */}
+        {/* <button
+          onClick={() => onSearchOpen?.()}
           className="cursor-pointer p-1.5 rounded-full hover:bg-white/10 transition-colors"
           aria-label="Search"
         >
           <SearchIcon stroke="rgba(255,255,255,0.6)" />
-        </button>
+        </button> */}
 
-        {/* Toggle — desktop */}
         <div className="hidden sm:block">
           <Toggle
             trackRef={trackRefDesktop}
             mapRef={mapBtnRefDesktop}
             listRef={listBtnRefDesktop}
+            filmsRef={filmsBtnRefDesktop}
           />
         </div>
-
-        {/* Toggle — mobile */}
         <div className="sm:hidden">
           <Toggle
             trackRef={trackRefMobile}
             mapRef={mapBtnRefMobile}
             listRef={listBtnRefMobile}
+            filmsRef={filmsBtnRefMobile}
           />
         </div>
       </div>
 
-      {searchOpen && (
+      {/* Search overlay — kept but hidden from UI */}
+      {/* {searchOpen && (
         <SearchOverlay
           theaters={theaters}
-          onSelect={handleSelect}
+          onSelect={(t) => {
+            // setSearchOpen(false)
+            if (onTheaterSelect) onTheaterSelect(t)
+            else router.push(`/theaters/${t.slug}`)
+          }}
           onClose={() => setSearchOpen(false)}
         />
-      )}
+      )} */}
     </>
   )
 }

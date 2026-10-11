@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import HomeClient from '@/components/HomeClient'
+import AppShell from '@/components/AppShell'
 
 export const revalidate = 60
 
@@ -11,18 +11,11 @@ export default async function HomePage() {
     .eq('status', 'published')
 
   const mapped = (theaters ?? []).map((t: any) => ({
-    id: t.id,
-    name: t.name,
-    slug: t.slug,
-    lat: t.lat,
-    lng: t.lng,
-    city: t.city,
-    country: t.country,
-    year_opened: t.year_opened,
-    year_closed: t.year_closed,
-    created_at: t.created_at,
+    id: t.id, name: t.name, slug: t.slug, lat: t.lat, lng: t.lng,
+    city: t.city, country: t.country, year_opened: t.year_opened,
+    year_closed: t.year_closed, created_at: t.created_at,
     image_path: t.images?.find((i: any) => i.is_featured)?.storage_path ?? t.images?.[0]?.storage_path ?? null,
   }))
 
-  return <HomeClient theaters={mapped} />
+  return <AppShell theaters={mapped} initialView="map" />
 }
