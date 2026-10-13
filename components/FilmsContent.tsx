@@ -116,13 +116,16 @@ export default function FilmsContent() {
                     <img
                       src={`https://image.tmdb.org/t/p/w342${m.poster_path}`}
                       alt={m.title}
-                      className="w-full aspect-[2/3] object-cover rounded-sm border border-zinc-800 transition-all duration-200 group-hover:border-zinc-600 group-hover:scale-[1.02]"
+                      className="w-full aspect-[2/3] object-cover rounded-sm border border-zinc-800 transition-all duration-400 custom-shadow group-hover:border-zinc-600"
                     />
                   ) : (
                     <div className="w-full aspect-[2/3] bg-zinc-800 rounded-lg flex items-center justify-center text-[10px] text-zinc-600">No poster</div>
                   )}
+                   {/*
                   <p className="text-xs text-zinc-400 mt-1.5 font-medium leading-tight line-clamp-2">{m.title}</p>
-                  {m.year && <p className="text-[10px] text-zinc-600">{m.year}</p>}
+                  {m.year && <p className="text-[10px] text-zinc-600">{m.year}</p> */
+                  
+                  }
                 </div>
               ))}
             </div>

@@ -318,7 +318,9 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       </div>
 
       {/* Theatres */}
+      
       <div className="bg-zinc-900" style={{ position: 'absolute', inset: 0, opacity: isList ? 1 : 0, pointerEvents: isList ? 'auto' : 'none', transition: 'opacity 300ms ease 50ms', overflowY: 'auto' }}>
+     
         <div className="pb-20 pt-32">
           <div className="max-w-6xl mx-auto px-4 py-6">
             <div className="flex gap-2 mb-6 flex-wrap">
@@ -331,7 +333,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
               {visibleTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer theater-card-appear">
                   <div className="border border-zinc-600 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
-                    {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-105 transition duration-300" />}
+                    {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />}
                   </div>
                   <p className="text-white mt-2 font-medium text-sm">{t.name}</p>
                   <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
@@ -360,7 +362,12 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       </div>
 
       {/* Header */}
+            {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20">
+        {/* Blurred header bar — Theatres and Films only, not map */}
+        {(isList || isFilms) && (
+          <div className="fixed top-0 left-0 w-full backdrop-blur-md bg-zinc-800/80 h-24 border-b border-zinc-600 pointer-events-none" />
+        )}
         <SiteHeader
           variant="map"
           theaters={theaters}
