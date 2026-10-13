@@ -333,7 +333,9 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
               {visibleTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer theater-card-appear">
                   <div className="border border-zinc-600 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
-                    {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />}
+                   
+               {/*     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />} */}
+                                     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover group-hover:scale-105 transition duration-300" />}
                   </div>
                   <p className="text-white mt-2 font-medium text-sm">{t.name}</p>
                   <p className="text-xs text-gray-500">{t.city}, {t.country}</p>

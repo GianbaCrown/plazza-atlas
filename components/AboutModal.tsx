@@ -43,15 +43,13 @@ export default function AboutModal() {
         onClick={close}
       />
 
-      <div
-        className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl overflow-hidden"
-                style={{
-          transform: visible ? 'translateY(0)' : 'translateY(20px)',
-          opacity: visible ? 1 : 0,
-          transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1), opacity 150ms ease',
-          maxHeight: '85dvh',
-        }}
-      >
+             <div className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-sm shadow-sm w-full sm:max-w-xl overflow-hidden"
+          style={{
+            transform: visible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1)',
+            maxHeight: '85dvh',
+          }}
+        >
         {/* Header */}
         <div className="flex items-start justify-between px-7 pt-7 pb-5 border-b border-zinc-800/60">
           <div>
@@ -71,19 +69,22 @@ export default function AboutModal() {
 
         {/* Scrollable content */}
         <div className="overflow-y-auto px-7 py-6" style={{ maxHeight: 'calc(85dvh - 80px)' }}>
-          <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-            </p>
-            <p>
-              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
-            <p>
-              Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt.
-            </p>
-            <p>
-              Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-            </p>
+          <div className="space-y-4 text-sm text-zinc-200 leading-relaxed">
+            <p>If you could time-travel, where and when would you go?</p> 
+
+            <p>Some may choose to go back to the dinosaurs, others straight to the Big Bang or Ancient Egypt.</p>
+              
+            <p>Me? First I might do a quick stop in 1989, right in front the marquee of Plazza Lumière, in my hometown of Besançon, France.</p>
+
+            <p>1989 was the year I fell in love movies. I went to see Cinema Paradiso with my grand-mother, and the film made such an impression on me that I spent the next two or three years memorizing every movie image that I could find, in magazines, in cinemas and in posters across the street.</p>
+              
+            <p>Years later, I became oddly enamored by photographic archives of movie theatres, and it took me a while to trace this newfound passion with that early rush of fascination. There’s something incredibly moving in the way these images capture the passing of time, from the ephemeral nature of movie programming, down to these glimpses of nearby businesses or random strangers walking by. </p>
+
+            <p>This site doesn't mean to compete with the patient and exhaustive archival work of international projects like Cinema Treasures, or Ciné Façades in France, though the latter has been very influential in reawakening my love for theatre marquees.</p>
+
+            <p>My ambition is not to keep track of every cinema that ever existed, it is simply to collect evocative images of places, movies and moments. If it can become a way to embrace the joy of moviegoing, to rediscover certain films – curios and classics alike – or to buy a ticket for a movie, then this site will have served its purpose. </p>
+
+            <p>If you want to share images, add a precision or a correction, or request for an image to be credited or taken down, please do reach out hello@plazza-atlas.cc.</p>
           </div>
 
           <div className="mt-8 pt-5 border-t border-zinc-800/60">

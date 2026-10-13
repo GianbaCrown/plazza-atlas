@@ -23,7 +23,7 @@ export default function Logo({ variant = 'dark' }: { variant?: 'light' | 'dark' 
           height: '50px',
           width: 'auto',
           opacity: '0.9',
-          filter: variant === 'light' ? 'brightness(0) invert(1)' : 'none',
+          // filter: variant === 'light' ? 'brightness(0) invert(1)' : 'none',
         }}
       />
     </Link>
