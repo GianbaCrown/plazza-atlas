@@ -98,7 +98,7 @@ export default function SiteHeader({
   }) => (
     <div
       ref={trackRef}
-      className="relative flex rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-white/15 border border-white/20"
+      className="relative flex backdrop-blur-sm rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-white/15 border border-zinc-600"
     >
       <div
         className="absolute top-0.5 bottom-0.5 rounded-full bg-white/90"
@@ -111,21 +111,21 @@ export default function SiteHeader({
       <button
         ref={mapRef}
         onClick={() => handleViewToggle('map')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-gray-900' : 'text-white/50'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-gray-900' : 'text-zinc-300'}`}
       >
         Map
       </button>
       <button
         ref={listRef}
         onClick={() => handleViewToggle('list')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-gray-900' : 'text-white/50'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-gray-900' : 'text-zinc-300'}`}
       >
         Theatres
       </button>
       <button
         ref={filmsRef}
         onClick={() => handleViewToggle('films')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-gray-900' : 'text-white/50'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-gray-900' : 'text-zinc-300'}`}
       >
         Films
       </button>

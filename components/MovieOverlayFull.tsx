@@ -97,8 +97,10 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
     }
   }, [])
 
-  function handleClose() {
-    setVisible(false)
+   function handleClose() {
+    requestAnimationFrame(() => {
+      setVisible(false)
+    })
     setTimeout(onClose, 220)
   }
 
