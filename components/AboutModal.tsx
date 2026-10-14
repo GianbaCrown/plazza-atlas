@@ -9,46 +9,38 @@ export default function AboutModal() {
   useEffect(() => {
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
 
-    const scrollables = Array.from(document.querySelectorAll<HTMLElement>('*')).filter((el) => {
-      const s = window.getComputedStyle(el)
-      return s.overflowY === 'auto' || s.overflowY === 'scroll'
-    })
-    const snapshots = scrollables.map((el) => ({ el, overflowY: el.style.overflowY }))
-    scrollables.forEach((el) => { el.style.overflowY = 'hidden' })
+    // Lock only the body — don't touch internal elements
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') close()
-    }
+    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') close() }
     document.addEventListener('keydown', handleKey)
-
     return () => {
       document.removeEventListener('keydown', handleKey)
       document.body.style.overflow = prev
-      snapshots.forEach(({ el, overflowY }) => { el.style.overflowY = overflowY })
     }
   }, [])
 
-  function close() {
-    setVisible(false)
-    setTimeout(() => router.back(), 200)
+   function close() {
+    requestAnimationFrame(() => setVisible(false))
+    setTimeout(() => router.back(), 220)
   }
 
   return (
        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-150"
-        style={{ opacity: visible ? 1 : 0 }}
+          <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        style={{ opacity: visible ? 1 : 0, transition: 'opacity 220ms ease' }}
         onClick={close}
       />
 
              <div className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-sm shadow-sm w-full sm:max-w-xl overflow-hidden"
-          style={{
-            transform: visible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'transform 250ms cubic-bezier(0.32, 0, 0.18, 1)',
-            maxHeight: '85dvh',
-          }}
+                 style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 220ms ease, transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
+          maxHeight: '80dvh',
+        }}
         >
         {/* Header */}
         <div className="flex items-start justify-between px-7 pt-7 pb-5 border-b border-zinc-800/60">
@@ -95,3 +87,4 @@ export default function AboutModal() {
     </div>
   )
 }
+

@@ -66,7 +66,12 @@ export default function FilmsContent() {
     if (decade) params.set('decade', decade)
     const res = await fetch(`/api/films?${params}`)
     const data = await res.json()
-    setMovies((prev) => reset ? data.movies : [...prev, ...data.movies])
+      setMovies((prev) => {
+      if (reset) return data.movies
+      const existingIds = new Set(prev.map((m: Movie) => m.id))
+      const newMovies = data.movies.filter((m: Movie) => !existingIds.has(m.id))
+      return [...prev, ...newMovies]
+    })
     setTotal(data.total)
     setOffset(off + 30)
     if (reset) setLoading(false); else setLoadingMore(false)

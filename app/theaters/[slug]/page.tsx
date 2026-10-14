@@ -144,6 +144,7 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
                     <p className="text-xs text-zinc-500 mt-0.5">
                       {theater.nearest_theater_address
                         .split(',')
+                         .slice(0, -1) // remove last segment (country)
                         .filter((part: string) => part.trim().toLowerCase() !== theater.nearest_theater_name?.trim().toLowerCase())
                         .join(',')
                         .trim()
@@ -163,8 +164,13 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
                 </div>
               )}
 
-        {/* Source */}
+      {/* Source */}
+           
                     {theater.theater_sources?.length > 0 && (
+                <div className="md:mb-5 border-t border-zinc-800 pt-5">
+                  <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
+                    Source
+                  </h2>
                 <div className="pt-4 border-t border-zinc-900 space-y-2">
                   {[...theater.theater_sources]
                     .sort((a: any, b: any) => a.sort_order - b.sort_order)
@@ -181,13 +187,13 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
                             />
                           )}
                           <p className="text-[10px] text-zinc-700">
-                            Source:{' '}
+                            
                             {url ? (
                               <a
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer underline underline-offset-2"
+                                className="text-xs text-amber-500 hover:text-amber-400 transition-colors cursor-pointer cursor-pointer"
                               >
                                 {name ?? url}
                               </a>
@@ -196,10 +202,13 @@ export default async function TheaterPage({ params }: { params: Promise<{ slug: 
                             )}
                           </p>
                         </div>
+                       
                       )
                     })}
-                </div>
+                    
+                </div></div> 
               )}
+
       </article>
     </div>
   )

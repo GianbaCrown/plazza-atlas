@@ -298,6 +298,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
                     <p className="text-xs text-zinc-500 mt-0.5">
                       {theater.nearest_theater_address
                         .split(',')
+                        .slice(0, -1) // remove last segment (country)
                         .filter((part: string) => part.trim().toLowerCase() !== theater.nearest_theater_name?.trim().toLowerCase())
                         .join(',')
                         .trim()
