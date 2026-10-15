@@ -49,7 +49,7 @@ function hoverPopupHTML(t: Theater) {
         <p style="font-weight:600;font-size:13px;color:#f4f4f5;margin:0 0 3px;line-height:1.3;letter-spacing:-0.01em">${t.name}</p>
         <p style="font-size:11px;color:#71717a;margin:0 0 2px">${[t.city, t.country].filter(Boolean).join(', ')}</p>
         ${dateRange(t) ? `<p style="font-size:11px;color:#52525b;margin:0 0 10px">${dateRange(t)}</p>` : '<div style="margin-bottom:10px"></div>'}
-        <a data-theater-link="${t.slug}" href="/theaters/${t.slug}" style="font-size:11px;font-weight:500;color:#d97706;text-decoration:none">View theater →</a>
+        <a data-theater-link="${t.slug}" href="/theaters/${t.slug}" style="color:#F59E0B;font-size:11px;font-weight:500;text-decoration:none">View theater →</a>
       </div>
     </div>
   `
@@ -177,7 +177,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       attributionControl: { compact: true },
     })
     mapRef.current = map
-    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 16, maxWidth: '240px' })
+    popupRef.current = new maplibregl.Popup({ closeButton: false, closeOnClick: true, offset: 16, maxWidth: '240px' })
 
        popupRef.current.on('open', () => {
       const el = popupRef.current!.getElement()
@@ -368,7 +368,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       <div className="absolute top-0 left-0 right-0 z-20">
         {/* Blurred header bar — Theatres and Films only, not map */}
         {(isList || isFilms) && (
-          <div className="fixed top-0 left-0 w-full backdrop-blur-md bg-zinc-800/80 h-24 border-b border-zinc-600 pointer-events-none" />
+          <div className="fixed top-0 left-0 w-full backdrop-blur-md bg-zinc-900/80 h-24 border-b border-zinc-700 pointer-events-none" />
         )}
         <SiteHeader
           variant="map"

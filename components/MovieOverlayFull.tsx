@@ -125,14 +125,14 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/85 backdrop-blur-sm transition-opacity duration-150"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-150"
         style={{ opacity: visible ? 1 : 0 }}
         onClick={handleClose}
       />
 
       {/* Card */}
       <div
-        className="relative z-10 bg-[#111] rounded-2xl overflow-hidden shadow-2xl w-full max-w-lg flex flex-col"
+        className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl w-full max-w-lg flex flex-col"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(16px)',
@@ -161,12 +161,12 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
           <div className="flex-1 p-4 flex flex-col gap-2 min-w-0">
             <div className="pr-5">
               <h2 className="text-white font-semibold text-sm leading-snug">{title}</h2>
-              <p className="text-zinc-500 text-xs mt-0.5">
+              <p className="text-zinc-400 text-xs mt-0.5">
                 {year}{full?.director && ` · ${full.director}`}
               </p>
             </div>
             {full?.overview && (
-              <p className="text-zinc-400 text-xs leading-relaxed line-clamp-4">{full.overview}</p>
+              <p className="text-zinc-100 text-xs leading-relaxed line-clamp-4">{full.overview}</p>
             )}
             {tmdbUrl && (
               <a
@@ -180,11 +180,12 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
             )}
           </div>
         </div>
+    
 
         {/* Theaters section — scrollable */}
         {theaters.length > 0 && (
           <div className="border-t border-zinc-800 overflow-y-auto">
-            <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-600 px-4 pt-3 pb-2">
+            <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-100 px-4 pt-3 pb-2">
               Featured in {theaters.length} {theaters.length === 1 ? 'theater' : 'theaters'}
             </p>
             <div className="divide-y divide-zinc-800/60">

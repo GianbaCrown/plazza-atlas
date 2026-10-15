@@ -136,7 +136,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       onTouchMove={(e) => e.preventDefault()}
     >
       <div
-        className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         style={{ opacity: visible ? 1 : 0, transition: 'opacity 200ms ease' }}
         onClick={handleClose}
       />

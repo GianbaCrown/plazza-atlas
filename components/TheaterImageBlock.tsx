@@ -165,6 +165,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
   movies.length === 4 ? 'grid-cols-4 sm:grid-cols-5' :
   movies.length === 5 ? 'grid-cols-4 sm:grid-cols-5 lg:grid-cols-6' :
   movies.length === 6 ? 'grid-cols-4 sm:grid-cols-5 lg:grid-cols-6' :
+  movies.length === 7 ? 'grid-cols-4 sm:grid-cols-5 lg:grid-cols-6' :
   'grid-cols-3 sm:grid-cols-5'
 }`}>
             {movies.map((im, i) => (

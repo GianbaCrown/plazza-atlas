@@ -14,6 +14,17 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   const touchStartY = useRef(0)
   const [dragOffset, setDragOffset] = useState(0)
   const isDragging = useRef(false)
+    const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false
+  )
+
+    useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 640)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true))
@@ -125,28 +136,41 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
 
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm transition-opacity duration-200"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
         style={{ opacity: mounted ? 1 : 0 }}
         onClick={close}
       />
 
       {/* Panel */}
-      <div
+           <div
         ref={panelRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-                className="absolute bg-zinc-900 overflow-y-auto
-          bottom-0 left-0 right-0
-          sm:bottom-auto sm:right-0 sm:top-0 sm:left-auto sm:h-full md:w-[60vw] sm:w-[80vw] sm:border border-l-zinc-800"
-        style={{
-          height: typeof window !== 'undefined' && window.innerWidth < 640 ? '100dvh' : '100%',
-          maxHeight: '100dvh',
-          transform: typeof window !== 'undefined' && window.innerWidth < 640
-            ? mobileTransform : desktopTransform,
-          transition: isDragging.current ? 'none' : 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
+        className="absolute bg-zinc-900 border border-zinc-800 overflow-y-auto rounded-sm drop-shadow-lg"
+               style={
+          isMobile
+          ? {
+              // Mobile — slides up from bottom, 95% wide, 75% tall
+              left: '2.5%',
+              right: '2.5%',
+              bottom: '16px',
+              height: '85dvh',
+              maxHeight: '85dvh',
+              transform: mobileTransform,
+              transition: isDragging.current ? 'none' : 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }
+          : {
+              // Desktop — slides from right, 40px margin top/right/bottom, auto height
+              top: '20px',
+              right: '20px',
+              width: 'clamp(360px, 60vw, 900px)',
+              maxHeight: 'calc(100dvh - 40px)',
+              transform: desktopTransform,
+              transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
+            }
+        }
       >
 
        {/* Drag handle — visual only, no swipe gesture (conflicts with pull-to-refresh) 
@@ -262,15 +286,15 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
 
                             {/* Previous names */}
               {theater.theater_names?.length > 0 && (
-                <div className="px-8 md:px-12 py-8 border-t border-zinc-800">
+                <div className="px-4 md:px-12 py-8 border-t border-zinc-800">
                   <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
                     Previous names
                   </p>
-                  <div className="space-y-0 border border-zinc-800 rounded-lg overflow-hidden">
+                  <div className="space-y-0 border-b border-zinc-800 overflow-hidden">
                     {[...theater.theater_names]
                       .sort((a: any, b: any) => a.sort_order - b.sort_order)
                       .map((n: any, i: number) => (
-                        <div key={n.id} className={`flex items-center justify-between px-4 py-2.5 text-xs ${i > 0 ? 'border-t border-zinc-800' : ''}`}>
+                        <div key={n.id} className={`flex items-center justify-between py-2.5 text-xs ${i > 0 ? 'border-t border-zinc-800' : ''}`}>
                           <span className="text-zinc-300 font-medium">{n.name}</span>
                           <span className="text-zinc-600 tabular-nums flex-shrink-0 ml-4">
                             {n.year_from && n.year_to
