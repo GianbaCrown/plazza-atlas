@@ -98,7 +98,7 @@ export default function SiteHeader({
   }) => (
     <div
       ref={trackRef}
-      className="relative flex backdrop-blur-sm rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-zinc-900 border border-zinc-700"
+      className="relative flex backdrop-blur-sm rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-black/30 border border-zinc-700"
     >
       <div
         className="absolute top-0.5 bottom-0.5 rounded-full bg-zinc-200"

@@ -132,46 +132,43 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   const desktopTransform = mounted ? 'translateX(0)' : 'translateX(100%)'
 
   return (
-    <div className="fixed inset-0 z-50">
+      <div className="fixed inset-0 z-50">
 
-      {/* Backdrop */}
+      {/* Backdrop — truly fixed, behind panel */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
         style={{ opacity: mounted ? 1 : 0 }}
         onClick={close}
       />
 
-      {/* Panel */}
-           <div
-        ref={panelRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="absolute bg-zinc-950/60 border border-zinc-800 overflow-y-auto rounded-lg drop-shadow-lg"
-               style={
-          isMobile
-          ? {
-              // Mobile — slides up from bottom, 95% wide, 75% tall
-              left: '2.5%',
-              right: '2.5%',
-              bottom: '16px',
-              height: '85dvh',
-              maxHeight: '85dvh',
-              transform: mobileTransform,
-              transition: isDragging.current ? 'none' : 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-            }
-          : {
-              // Desktop — slides from right, 40px margin top/right/bottom, auto height
-              top: '20px',
-              right: '20px',
-              width: 'clamp(360px, 60vw, 900px)',
-              maxHeight: 'calc(100dvh - 40px)',
-              transform: desktopTransform,
-              transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
-            }
-        }
+      {/* Scroll container — sits on top of backdrop */}
+      <div
+        className="fixed inset-0 overflow-y-auto theater-modal-scroll pointer-events-none"
+        style={isMobile ? { display: 'flex', alignItems: 'flex-end', padding: '0 2.5% 16px' } : { padding: '40px 40px 40px 0', display: 'flex', justifyContent: 'flex-end' }}
       >
+        {/* Panel — no overflow, grows with content */}
+        <div
+          ref={panelRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="relative rounded-sm pointer-events-auto"
+          style={
+            isMobile
+            ? {
+                width: '100%',
+                minHeight: '75dvh',
+                transform: mobileTransform,
+                transition: isDragging.current ? 'none' : 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+              }
+            : {
+                width: 'clamp(360px, 60vw, 900px)',
+                transform: desktopTransform,
+                transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
+              }
+          }
+        >
 
        {/* Drag handle — visual only, no swipe gesture (conflicts with pull-to-refresh) 
         <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
@@ -190,7 +187,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
         </button>
 
         {/* Content */}
-        <div className="sm:pb-24">
+        <div className="bg-black/60 border border-zinc-800 rounded-lg mb-24 sm:pb-24">
 
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -349,7 +346,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
                   <h2 className="text-[10px] font-medium tracking-widest uppercase text-zinc-400">
                     Source
                   </h2>
-                <div className="pt-4 border-t border-zinc-900 space-y-2">
+                <div className="pt-4 space-y-2">
                   {[...theater.theater_sources]
                     .sort((a: any, b: any) => a.sort_order - b.sort_order)
                     .map((ts: any) => {
@@ -391,6 +388,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
           )}
         </div>
       </div>
+    </div>
     </div>
   )
 }

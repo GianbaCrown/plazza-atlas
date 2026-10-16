@@ -42,7 +42,7 @@ function hoverPopupHTML(t: Theater) {
   return `
     <div style="font-family:system-ui,sans-serif;width:220px">
       ${img ? `
-        <a href="/theaters/${t.slug}" data-theater-link="${t.slug}" style="display:block;width:100%;height:120px;overflow:hidden;cursor:pointer;background:#09090b;flex-shrink:0">
+        <a href="/theaters/${t.slug}" data-theater-link="${t.slug}" style="display:block;width:100%;height:120px;overflow:hidden;cursor:pointer;background:#09090B;flex-shrink:0">
           <img src="${img}" style="width:100%;height:120px;object-fit:cover;display:block;opacity:0;transition:opacity 0.25s ease" onload="this.style.opacity=1"/>
         </a>` : ''}
       <div style="padding:10px 12px 12px">
@@ -236,6 +236,18 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
 
     map.on('click', () => { if (!preventMapClose) popupRef.current?.remove() })
 
+          function isPointOnFrontOfGlobe(lng: number, lat: number): boolean {
+      const center = map.getCenter()
+      const lat1 = center.lat * Math.PI / 180
+      const lng1 = center.lng * Math.PI / 180
+      const lat2 = lat * Math.PI / 180
+      const lng2 = lng * Math.PI / 180
+      // Dot product of the two unit vectors — positive means front hemisphere
+      const cos = Math.sin(lat1) * Math.sin(lat2) +
+                  Math.cos(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1)
+      return cos > 0.05 // small positive threshold avoids edge flicker
+    }
+
     function renderClusters() {
       markersOnScreen.forEach(m => m.remove()); markersOnScreen.length = 0
       const bounds = map.getBounds()
@@ -265,7 +277,12 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
           el.onmouseleave = scheduleClose
           el.onclick = (e) => { e.stopPropagation(); collapseAttribution(); if (!theater) return; cancelClose(); preventMapClose = true; openPopup(theater); setTimeout(() => { preventMapClose = false }, 100) }
         }
-        markersOnScreen.push(new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map))
+                const visible = isPointOnFrontOfGlobe(lng, lat)
+        el.style.opacity = visible ? '1' : '0'
+        el.style.pointerEvents = visible ? 'auto' : 'none'
+        markersOnScreen.push(
+          new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
+        )
       })
     }
 
