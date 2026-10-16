@@ -147,7 +147,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="absolute bg-zinc-900 border border-zinc-800 overflow-y-auto rounded-sm drop-shadow-lg"
+        className="absolute bg-zinc-950/60 border border-zinc-800 overflow-y-auto rounded-lg drop-shadow-lg"
                style={
           isMobile
           ? {
@@ -206,7 +206,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
           ) : (
             <>
               {/* Header */}
-              <div className="px-4 md:px-12 py-8 mb-4 mt-4 pr-8 bg-zinc-900">
+              <div className="px-4 md:px-12 py-8 mb-4 pr-8">
 
                  {/* Still open */}
         {theater.is_open && (

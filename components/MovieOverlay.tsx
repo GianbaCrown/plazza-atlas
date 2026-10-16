@@ -142,7 +142,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       />
 
       <div
-        className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
+        className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(16px)',

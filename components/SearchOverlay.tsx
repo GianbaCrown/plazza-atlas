@@ -100,13 +100,24 @@ export default function SearchOverlay({ theaters, onSelect, onClose }: Props) {
           // style={{ fontSize: '16px' }} // prevent iOS zoom
         />
 
-        {results.length > 0 && (
-          <ul className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl overflow-y-auto divide-y divide-zinc-700 z-10" style={{ maxHeight: '50vh' }}>            {results.map((t) => (
+               {results.length > 0 && (
+          <ul
+            className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl overflow-y-auto divide-y divide-zinc-700 z-10"
+            style={{ maxHeight: '50vh' }}
+            onTouchStart={(e) => { (e.currentTarget as any)._touchStartY = e.touches[0].clientY }}
+            onTouchMove={(e) => { (e.currentTarget as any)._didScroll = Math.abs(e.touches[0].clientY - (e.currentTarget as any)._touchStartY) > 5 }}
+            onTouchEnd={() => { /* reset handled per-item */ }}
+          >
+            {results.map((t) => (
               <li
                 key={t.id}
                 className="px-5 py-3 hover:bg-zinc-800 cursor-pointer transition"
                 onMouseDown={() => handleSelect(t)}
-                onTouchEnd={() => handleSelect(t)}
+                onTouchEnd={(e) => {
+                  const list = e.currentTarget.closest('ul') as any
+                  if (list?._didScroll) { list._didScroll = false; return }
+                  handleSelect(t)
+                }}
               >
                 <span className="font-medium text-zinc-100 text-sm block">{t.name}</span>
                 <span className="text-zinc-500 text-xs">{t.city}, {t.country}</span>

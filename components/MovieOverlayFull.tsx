@@ -132,7 +132,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
 
       {/* Card */}
       <div
-        className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl w-full max-w-lg flex flex-col"
+        className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl w-full max-w-lg flex flex-col"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(16px)',
