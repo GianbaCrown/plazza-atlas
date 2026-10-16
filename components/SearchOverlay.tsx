@@ -62,9 +62,9 @@ export default function SearchOverlay({ theaters, onSelect, onClose }: Props) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center pt-24 px-4"
+      className="backdrop-blur-md bg-black/60 fixed inset-0 z-[100] flex flex-col items-center pt-24 px-4"
       style={{
-        background: 'rgba(9, 9, 11, 0.9)',
+       // background: 'rgba(9, 9, 11, 0.9)',
         opacity: visible ? 1 : 0,
         transition: 'opacity 180ms ease',
       }}
@@ -96,12 +96,12 @@ export default function SearchOverlay({ theaters, onSelect, onClose }: Props) {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search theaters by name, city, country..."
-          className="w-full bg-zinc-900 font-sm border border-zinc-800 rounded-sm px-5 py-3.5 text-sm text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-800"
+          className="w-full bg-zinc-900 font-sm border border-zinc-700 rounded-sm px-5 py-3.5 text-sm text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-700"
           // style={{ fontSize: '16px' }} // prevent iOS zoom
         />
 
         {results.length > 0 && (
-          <ul className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-zinc-800 rounded-sm shadow-2xl overflow-hidden divide-y divide-zinc-800 z-10">
+          <ul className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl overflow-hidden divide-y divide-zinc-700 z-10">
             {results.map((t) => (
               <li
                 key={t.id}

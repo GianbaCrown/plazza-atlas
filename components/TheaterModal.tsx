@@ -206,7 +206,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
           ) : (
             <>
               {/* Header */}
-              <div className="px-8 md:px-12 py-8 mb-7 pr-8 bg-zinc-900 border border-b-zinc-800">
+              <div className="px-4 md:px-12 py-8 mb-4 mt-4 pr-8 bg-zinc-900">
 
                  {/* Still open */}
         {theater.is_open && (
@@ -238,7 +238,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
 
                 
 
-                <h1 className="text-xl sm:text-2xl font-semibold text-zinc-100 tracking-tight leading-snug mb-1.5">
+                <h1 className="text-xl sm:text-3xl font-semibold text-zinc-100 tracking-tight leading-snug mb-1.5">
                   {theater.name}
                 </h1>
 
@@ -287,16 +287,16 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
                             {/* Previous names */}
               {theater.theater_names?.length > 0 && (
                 <div className="px-4 md:px-12 py-8 border-t border-zinc-800">
-                  <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 mb-3">
+                  <h2 className="text-[10px] font-medium tracking-widest uppercase text-zinc-400">
                     Previous names
-                  </p>
-                  <div className="space-y-0 border-b border-zinc-800 overflow-hidden">
+                  </h2>
+                  <div className="space-y-0 overflow-hidden">
                     {[...theater.theater_names]
                       .sort((a: any, b: any) => a.sort_order - b.sort_order)
                       .map((n: any, i: number) => (
-                        <div key={n.id} className={`flex items-center justify-between py-2.5 text-xs ${i > 0 ? 'border-t border-zinc-800' : ''}`}>
-                          <span className="text-zinc-300 font-medium">{n.name}</span>
-                          <span className="text-zinc-600 tabular-nums flex-shrink-0 ml-4">
+                        <div key={n.id} className={`border border-b-zinc-800 flex items-center justify-between py-2.5 text-xs ${i > 0 ? '' : ''}`}>
+                          <span className="text-zinc-100 font-medium">{n.name}</span>
+                          <span className="text-zinc-400 flex-shrink-0 ml-4">
                             {n.year_from && n.year_to
                               ? `${n.year_from} – ${n.year_to}`
                               : n.year_from
@@ -313,13 +313,13 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
 
               {/* Nearest theater */}
                           {theater.nearest_theater_name && (
-                <div className="px-8 md:px-12 py-8 mb-5 border-t border-zinc-800">
-                  <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
+                <div className="px-4 md:px-12 py-8 border-t border-zinc-800">
+                  <h2 className="text-[10px] font-medium tracking-widest uppercase text-zinc-400">
                     Nearest theater today
                   </h2>
-                  <p className="text-sm text-zinc-300 font-medium mt-4">{theater.nearest_theater_name}</p>
+                  <p className="text-sm text-zinc-100 font-medium mt-4">{theater.nearest_theater_name}</p>
                   {theater.nearest_theater_address && (
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-zinc-400 mt-0.5">
                       {theater.nearest_theater_address
                         .split(',')
                         .slice(0, -1) // remove last segment (country)
@@ -345,8 +345,8 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
               {/* Source */}
            
                     {theater.theater_sources?.length > 0 && (
-                <div className="px-8 md:px-12 mb-5 border-t border-zinc-800 pt-5">
-                  <h2 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">
+                <div className="px-4 md:px-12 mb-5 border-t border-zinc-800 pt-5">
+                  <h2 className="text-[10px] font-medium tracking-widest uppercase text-zinc-400">
                     Source
                   </h2>
                 <div className="pt-4 border-t border-zinc-900 space-y-2">

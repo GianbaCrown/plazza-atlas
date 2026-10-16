@@ -46,9 +46,10 @@ function hoverPopupHTML(t: Theater) {
           <img src="${img}" style="width:100%;height:120px;object-fit:cover;display:block;opacity:0;transition:opacity 0.25s ease" onload="this.style.opacity=1"/>
         </a>` : ''}
       <div style="padding:10px 12px 12px">
-        <p style="font-weight:600;font-size:13px;color:#f4f4f5;margin:0 0 3px;line-height:1.3;letter-spacing:-0.01em">${t.name}</p>
-        <p style="font-size:11px;color:#71717a;margin:0 0 2px">${[t.city, t.country].filter(Boolean).join(', ')}</p>
-        ${dateRange(t) ? `<p style="font-size:11px;color:#52525b;margin:0 0 10px">${dateRange(t)}</p>` : '<div style="margin-bottom:10px"></div>'}
+        <p style="font-weight:600;font-size:13px;color:#F4F4F5;margin:0 0 3px;line-height:1.3;">${t.name}</p>
+        <p style="font-size:11px;color:#A1A1AA;margin:0 0 2px">${[t.city, t.country].filter(Boolean).join(', ')}</p>
+       
+         : '<div style="margin-bottom:5px"></div>
         <a data-theater-link="${t.slug}" href="/theaters/${t.slug}" style="color:#F59E0B;font-size:11px;font-weight:500;text-decoration:none">View theater →</a>
       </div>
     </div>
@@ -87,7 +88,7 @@ function FilterDropdown({ label, value, options, onChange }: {
         <div className="absolute top-full left-0 mt-1.5 min-w-[160px] bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-30 py-1">
           {options.map((o) => (
             <button key={o.value} onMouseDown={() => { onChange(o.value); setOpen(false) }}
-              className={`w-full text-left px-4 py-2 text-xs cursor-pointer transition-colors ${o.value === value ? 'text-amber-400 bg-zinc-800' : 'text-zinc-300 hover:bg-zinc-800'}`}>
+              className={`w-full text-left px-4 py-2 text-xs cursor-pointer transition-colors ${o.value === value ? 'text-amber-400 bg-zinc-800' : 'text-zinc-400 hover:bg-zinc-800'}`}>
               {o.label}
             </button>
           ))}
@@ -104,7 +105,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedDecade, setSelectedDecade] = useState('')
   const [sortBy, setSortBy] = useState('newest')
-  const [visibleCount, setVisibleCount] = useState(30)
+  const [visibleCount, setVisibleCount] = useState(50)
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
@@ -332,7 +333,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {visibleTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer theater-card-appear">
-                  <div className="border border-zinc-600 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden">
+                  <div className="border border-zinc-800 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden transition-all duration-400 group-hover:border-zinc-600">
                    
                {/*     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />} */}
                                      {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover group-hover:scale-105 transition duration-300" />}

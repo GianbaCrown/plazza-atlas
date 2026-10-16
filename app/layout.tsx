@@ -8,7 +8,7 @@ const fraunces = Fraunces({ subsets: ['latin'], weight: ['500', '600'], variable
 
 export const metadata: Metadata = {
   title: 'Plazza Atlas',
-  description: 'An atlas of movie theaters that no longer exist.',
+  description: 'The world map of movie wonder.',
 }
 
 export const viewport = {

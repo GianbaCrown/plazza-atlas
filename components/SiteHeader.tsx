@@ -98,10 +98,10 @@ export default function SiteHeader({
   }) => (
     <div
       ref={trackRef}
-      className="relative flex backdrop-blur-sm rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-white/15 border border-zinc-600"
+      className="relative flex backdrop-blur-sm rounded-full p-0.5 text-xs font-medium flex-shrink-0 select-none bg-zinc-900 border border-zinc-700"
     >
       <div
-        className="absolute top-0.5 bottom-0.5 rounded-full bg-white/90"
+        className="absolute top-0.5 bottom-0.5 rounded-full bg-zinc-200"
         style={{
           width: pillStyle.width,
           left: pillStyle.left,
@@ -111,21 +111,21 @@ export default function SiteHeader({
       <button
         ref={mapRef}
         onClick={() => handleViewToggle('map')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-gray-900' : 'text-zinc-300'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-zinc-900' : 'text-zinc-300'}`}
       >
         Map
       </button>
       <button
         ref={listRef}
         onClick={() => handleViewToggle('list')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-gray-900' : 'text-zinc-300'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-zinc-900' : 'text-zinc-300'}`}
       >
         Theatres
       </button>
       <button
         ref={filmsRef}
         onClick={() => handleViewToggle('films')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-gray-900' : 'text-zinc-300'}`}
+        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-zinc-900' : 'text-zinc-300'}`}
       >
         Films
       </button>
@@ -134,7 +134,7 @@ export default function SiteHeader({
 
  const wrapperClass = isMap
     ? 'absolute top-0 pt-6 left-0 right-0 z-20 flex items-center px-4 py-4 gap-3'
-    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-4 gap-3 bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-800'
+    : 'sticky top-0 pt-6 z-20 flex items-center px-4 py-4 gap-3 bg-black/60 backdrop-blur-sm border-b border-zinc-800'
 
   return (
     <>
