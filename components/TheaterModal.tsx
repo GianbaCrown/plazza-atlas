@@ -243,7 +243,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
                 </h1>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-zinc-400 text-xs tracking-wide">
+                  <span className="text-zinc-400 text-xs">
                     {[theater.city, theater.country].filter(Boolean).join(', ')}
                   </span>
                   {(theater.year_opened || theater.year_closed) && (
@@ -266,7 +266,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
             
              {/* Theater Image Block */}
 
-            <div className="px-8 md:px-12 ">
+            <div className="px-4 md:px-12 ">
                            {/* All images — carousel if multiple */}
               {images.length > 0 && (
                 <TheaterImageBlock
@@ -290,11 +290,11 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
                   <h2 className="text-[10px] font-medium tracking-widest uppercase text-zinc-400">
                     Previous names
                   </h2>
-                  <div className="space-y-0 overflow-hidden">
+                  <div className="overflow-hidden">
                     {[...theater.theater_names]
                       .sort((a: any, b: any) => a.sort_order - b.sort_order)
                       .map((n: any, i: number) => (
-                        <div key={n.id} className={`border border-b-zinc-800 flex items-center justify-between py-2.5 text-xs ${i > 0 ? '' : ''}`}>
+                        <div key={n.id} className={`border-b border-zinc-800 flex items-center justify-between py-2.5 text-xs ${i > 0 ? '' : ''}`}>
                           <span className="text-zinc-100 font-medium">{n.name}</span>
                           <span className="text-zinc-400 flex-shrink-0 ml-4">
                             {n.year_from && n.year_to

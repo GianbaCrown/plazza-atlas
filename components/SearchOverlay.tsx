@@ -101,8 +101,7 @@ export default function SearchOverlay({ theaters, onSelect, onClose }: Props) {
         />
 
         {results.length > 0 && (
-          <ul className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl overflow-hidden divide-y divide-zinc-700 z-10">
-            {results.map((t) => (
+          <ul className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl overflow-y-auto divide-y divide-zinc-700 z-10" style={{ maxHeight: '50vh' }}>            {results.map((t) => (
               <li
                 key={t.id}
                 className="px-5 py-3 hover:bg-zinc-800 cursor-pointer transition"

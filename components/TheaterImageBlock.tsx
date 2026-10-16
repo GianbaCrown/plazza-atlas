@@ -71,7 +71,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
   const movies = current.image_movies ?? []
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 px-0">
 
       {/* Image container */}
       <div
