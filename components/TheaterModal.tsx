@@ -187,7 +187,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
         </button>
 
         {/* Content */}
-        <div className="bg-black/60 border border-zinc-800 rounded-lg mb-24 sm:pb-24">
+        <div className="bg-black/60 border border-zinc-800 rounded-lg mb-24 sm:pb-12">
 
           {loading ? (
             <div className="flex items-center justify-center h-64">
