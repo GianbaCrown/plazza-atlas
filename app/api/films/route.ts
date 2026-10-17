@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const decade = searchParams.get('decade')
   const sort = searchParams.get('sort') ?? 'newest'
   const offset = Number(searchParams.get('offset') ?? 0)
-  const limit = 30
+  const limit = 60
 
   const supabase = await createClient()
 

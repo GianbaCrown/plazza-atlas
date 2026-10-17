@@ -132,7 +132,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
 
       {/* Card */}
       <div
-        className="relative z-10 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl w-full max-w-lg flex flex-col"
+        className="relative z-10 overflow-hidden rounded-sm w-full max-w-lg flex flex-col"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(16px)',
@@ -142,14 +142,14 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top section — poster + info */}
-        <div className="flex flex-row flex-shrink-0">
-          <div className="w-32 flex-shrink-0 bg-zinc-950">
+        <div className="flex flex-row p-2 flex-shrink-0 mb-4 bg-zinc-950 border border-zinc-800 rounded-sm">
+          <div className="w-32 flex-shrink-0">
             {poster ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={`https://image.tmdb.org/t/p/w342${poster}`}
                 alt={String(title)}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-xs"
                 style={{ minHeight: '160px', display: 'block' }}
               />
             ) : (
@@ -166,7 +166,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
               </p>
             </div>
             {full?.overview && (
-              <p className="text-zinc-100 text-xs leading-relaxed line-clamp-4">{full.overview}</p>
+              <p className="text-zinc-300 text-xs leading-relaxed line-clamp-4">{full.overview}</p>
             )}
             {tmdbUrl && (
               <a
@@ -184,11 +184,12 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
 
         {/* Theaters section — scrollable */}
         {theaters.length > 0 && (
-          <div className="border-t border-zinc-800 overflow-y-auto">
-            <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-100 px-4 pt-3 pb-2">
-              Featured in {theaters.length} {theaters.length === 1 ? 'theater' : 'theaters'}
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 overflow-y-auto">
+            <p className="text-[10px] font-medium tracking-widest uppercase text-zinc-400 px-4 pt-3 pb-2">
+              {/* Featured in {theaters.length} {theaters.length === 1 ? 'theater' : 'theaters'} */}
+              Featured in
             </p>
-            <div className="divide-y divide-zinc-800/60">
+            <div className="divide-y divide-zinc-800">
               {theaters.map((t) => (
                 <button
                   key={t.id}

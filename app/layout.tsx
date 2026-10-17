@@ -2,13 +2,36 @@ import type { Metadata } from 'next'
 import { Inter, Fraunces } from 'next/font/google'
 import './globals.css'
 
-
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-const fraunces = Fraunces({ subsets: ['latin'], weight: ['500', '600'], variable: '--font-serif' })
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  weight: ['500', '600'],
+  variable: '--font-serif',
+})
 
 export const metadata: Metadata = {
   title: 'Plazza Atlas',
   description: 'The world map of movie wonder.',
+  openGraph: {
+    title: 'Plazza Atlas',
+    description: 'The world map of movie wonder.',
+    siteName: 'Plazza Atlas',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Plazza Atlas, the world map of movie wonder',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Plazza Atlas',
+    description: 'The world map of movie wonder.',
+    images: ['/og-image.jpg'],
+  },
 }
 
 export const viewport = {
@@ -18,14 +41,17 @@ export const viewport = {
 }
 
 export default function RootLayout({
-  children, modal,
-}: { children: React.ReactNode; modal: React.ReactNode }) {
+  children,
+  modal,
+}: {
+  children: React.ReactNode
+  modal: React.ReactNode
+}) {
   return (
     <html lang="en">
       <body className={`${inter.variable} ${fraunces.variable}`}>
         {children}
         {modal}
-
       </body>
     </html>
   )

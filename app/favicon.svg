@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="429" height="429" viewBox="0 0 429 429" fill="none"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><g clip-path="url(#clip0_183_2)">
+<circle cx="214.5" cy="214.5" r="214.5" fill="#09090B"></circle>
+<path d="M144.136 322.631V117H226.854C294.427 117 332 149.621 332 202.922C332 255.058 294.427 288.845 230.932 288.845C225.398 288.845 219.573 288.553 213.456 287.971V322.631H144.136ZM213.456 278.942C219.573 279.524 225.107 279.816 230.932 279.816C288.602 279.816 322.388 249.816 322.388 202.922C322.388 154.864 288.893 126.32 226.854 126.32H213.456V278.942ZM122 322.631C122.291 303.699 122.583 292.631 122.583 289.427V150.204C122.583 147 122.291 135.932 122 117H132.194V322.631H122Z" fill="#F4F4F5"></path>
+</g><defs>
+<clipPath id="clip0_183_2">
+<rect width="429" height="429" fill="white"></rect>
+</clipPath>
+</defs><style>@media (prefers-color-scheme: light) { :root { filter: contrast(1) brightness(1); } }
+</style></svg>

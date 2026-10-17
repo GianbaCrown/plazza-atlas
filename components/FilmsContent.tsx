@@ -98,7 +98,7 @@ export default function FilmsContent() {
             { label: 'Oldest first', value: 'oldest' },
             { label: 'A → Z', value: 'alpha-asc' },
             { label: 'Z → A', value: 'alpha-desc' },
-            { label: 'Popularity', value: 'popular' },
+            { label: 'Most popular', value: 'popular' },
           ]}
         />
       </div>

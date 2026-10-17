@@ -27,7 +27,7 @@ export default function AboutModal() {
   }
 
   return (
-       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4">
+       <div className="fixed inset-0 z-50 grid place-items-center px-4">
           <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         style={{ opacity: visible ? 1 : 0, transition: 'opacity 220ms ease' }}
