@@ -132,7 +132,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   const desktopTransform = mounted ? 'translateX(0)' : 'translateX(100%)'
 
     const modalContent = (
-    <div className="bg-black/60 border border-zinc-800 rounded-lg sm:rounded-lg pb-16">
+    <div className="bg-black/60 rounded-none border-0 sm:rounded-lg sm:border sm:border-zinc-800 pb-4">
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <svg className="animate-spin w-5 h-5 text-zinc-600" viewBox="0 0 24 24" fill="none">
