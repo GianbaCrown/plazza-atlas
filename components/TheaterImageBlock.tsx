@@ -74,65 +74,76 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
     <div className="mb-8 px-0">
 
       {/* Image container */}
-      <div
-        className="relative bg-zinc-950 rounded-sm border border-zinc-800 overflow-hidden"
-        style={{ aspectRatio: '4/3' }}
-      >
-        {/* Full track — all images in one row, translated by index */}
-        <div
-          style={{
-            display: 'flex',
-            width: `${images.length * 100}%`,
-            height: '100%',
-            transform: `translateX(-${(currentIndex / images.length) * 100}%)`,
-            transition: 'transform 320ms ease-in-out',
-          }}
-        >
-          {images.map((img, i) => (
-            <div
-              key={img.id}
-              style={{ width: `${100 / images.length}%`, flexShrink: 0, height: '100%' }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imgUrl(img.storage_path)}
-                alt={img.caption ?? theaterName}
-                className="w-full h-full object-contain cursor-zoom-in"
-                loading={currentIndex === 0 ? 'eager' : 'lazy'}
-                onClick={() => setOverlayImage(img)}
-                draggable={false}
-              />
-            </div>
-          ))}
+      <div className="relative bg-zinc-950 rounded-sm border border-zinc-800 overflow-hidden">
+
+        {/* Image area — fixed 4/3 ratio */}
+        <div className="relative" style={{ aspectRatio: '4/3' }}>
+          {/* Full track — all images in one row, translated by index */}
+          <div
+            style={{
+              display: 'flex',
+              width: `${images.length * 100}%`,
+              height: '100%',
+              transform: `translateX(-${(currentIndex / images.length) * 100}%)`,
+              transition: 'transform 320ms ease-in-out',
+            }}
+          >
+            {images.map((img, i) => (
+              <div
+                key={img.id}
+                style={{ width: `${100 / images.length}%`, flexShrink: 0, height: '100%' }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imgUrl(img.storage_path)}
+                  alt={img.caption ?? theaterName}
+                  className="w-full h-full object-contain cursor-zoom-in"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  onClick={() => setOverlayImage(img)}
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Arrows */}
+          {isMultiple && (
+            <>
+              <button
+                onClick={prev}
+                disabled={currentIndex === 0}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950/70 hover:bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer z-10 disabled:opacity-20 disabled:cursor-default"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </button>
+              <button
+                onClick={next}
+                disabled={currentIndex === images.length - 1}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950/70 hover:bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer z-10 disabled:opacity-20 disabled:cursor-default"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+              <div className="absolute top-2 right-2 bg-zinc-950/60 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-zinc-300 pointer-events-none z-10">
+                {currentIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Arrows — desktop and mobile */}
-        {isMultiple && (
-          <>
-            <button
-              onClick={prev}
-              disabled={currentIndex === 0}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950/70 hover:bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer z-10 disabled:opacity-20 disabled:cursor-default"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-            </button>
-            <button
-              onClick={next}
-              disabled={currentIndex === images.length - 1}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950/70 hover:bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer z-10 disabled:opacity-20 disabled:cursor-default"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </button>
+        {/* Caption bar — always present, shows current image's caption */}
+        <div className="px-3 py-2.5 min-h-[36px] flex items-start gap-2">
+          {current.caption && (
+            <span className="text-[10px] text-zinc-300 leading-snug flex-1">{current.caption}</span>
+          )}
+          {current.credit && (
+            <span className="text-[10px] text-zinc-500 leading-snug flex-shrink-0 ml-auto">Photography: {current.credit}</span>
+          )}
+        </div>
 
-            <div className="absolute top-2 right-2 bg-zinc-950/60 backdrop-blur-sm rounded-full px-2 py-0.5 text-[10px] text-zinc-300 pointer-events-none z-10">
-              {currentIndex + 1} / {images.length}
-            </div>
-          </>
-        )}
       </div>
 
       {/* Breadcrumb dots */}
