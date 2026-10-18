@@ -350,10 +350,10 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {visibleTheaters.map((t) => (
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer theater-card-appear">
-                  <div className="border border-zinc-800 aspect-[3/4] relative bg-gray-200 rounded-sm overflow-hidden transition-all duration-400 group-hover:border-zinc-600">
+                  <div className="border border-zinc-800 aspect-[3/2] relative bg-gray-200 rounded-sm overflow-hidden transition-all duration-400 group-hover:border-zinc-600">
                    
                {/*     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />} */}
-                                     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover group-hover:scale-105 transition duration-300" />}
+                                     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover transition duration-300" />}
                   </div>
                   <p className="text-white mt-2 font-medium text-sm">{t.name}</p>
                   <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
