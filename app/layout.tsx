@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: 'Plazza Atlas',
     images: [
       {
-        url: '/og-image.jpg',
+        url: 'https://plazza-atlas.cc/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Plazza Atlas, the world map of movie wonder',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Plazza Atlas',
     description: 'The world map of movie wonder.',
-    images: ['/og-image.jpg'],
+    images: ['https://plazza-atlas.cc/og-image.jpg'],
   },
 }
 
