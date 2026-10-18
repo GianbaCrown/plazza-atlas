@@ -211,12 +211,9 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
 
         <button
           onClick={handleClose}
-          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-zinc-500 hover:text-white transition cursor-pointer"
+          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-100 transition cursor-pointer"
         >
-          <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="1" y1="1" x2="13" y2="13"/>
-            <line x1="13" y1="1" x2="1" y2="13"/>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" stroke-linejoin="round" strokeWidth="2" d="M6 18L17.94 6M18 18L6.06 6"/></svg>
         </button>
       </div>
     </div>,
