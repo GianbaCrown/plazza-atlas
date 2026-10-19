@@ -13,7 +13,9 @@ export async function GET(req: Request) {
       title: m.title,
       year: m.release_date?.slice(0, 4),
       poster_path: m.poster_path,
-      popularity: m.popularity ?? 0,
+            popularity: m.vote_average && m.vote_count
+        ? m.vote_average * Math.log10(Math.max(m.vote_count, 10))
+        : 0,
     })) ?? []
   )
 }

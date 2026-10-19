@@ -19,13 +19,16 @@ export async function GET() {
         `https://api.themoviedb.org/3/movie/${movie.tmdb_id}?api_key=${process.env.TMDB_API_KEY}`
       )
       const data = await res.json()
-      if (data.popularity) {
-        await supabase
-          .from('movies')
-          .update({ popularity: data.popularity })
-          .eq('id', movie.id)
-        updated++
-      }
+                          if (data.vote_count) {
+          await supabase
+            .from('movies')
+            .update({
+              popularity: data.vote_count,
+              genre_ids: data.genres?.map((g: any) => g.id) ?? [],
+            })
+            .eq('id', movie.id)
+          updated++
+        }
     } catch {}
   }
 
