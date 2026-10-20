@@ -1,24 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+export const revalidate = 3600
+
 export async function GET() {
   const supabase = await createClient()
-
-  // Get distinct years from movies that appear in published theaters
   const { data } = await supabase
-    .from('movies')
-    .select('year, image_movies!inner(images!inner(theaters!inner(status)))')
-    .eq('image_movies.images.theaters.status', 'published')
-    .not('year', 'is', null)
+    .from('published_movies')
+    .select('year')
+    .gt('year', 0)
 
-  if (!data) return NextResponse.json({ decades: [] })
+  const set = new Set<number>()
+  for (const m of data ?? []) if (m.year) set.add(Math.floor(m.year / 10) * 10)
 
-  // Derive unique decades
-  const decadeSet = new Set<number>()
-  for (const m of data) {
-    if (m.year) decadeSet.add(Math.floor(m.year / 10) * 10)
-  }
-
-  const decades = [...decadeSet].sort((a, b) => b - a) // newest first
-  return NextResponse.json({ decades })
+  return NextResponse.json({ decades: [...set].sort((a, b) => b - a) })
 }

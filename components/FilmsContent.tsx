@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import MovieOverlayFull from './MovieOverlayFull'
 
 
@@ -53,11 +53,38 @@ export default function FilmsContent() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [decade, setDecade] = useState('')
   const [sort, setSort] = useState<SortOption>('newest')
-  const [offset, setOffset] = useState(0)
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [availableDecades, setAvailableDecades] = useState<number[]>([])
     const [genre, setGenre] = useState('')
   const [availableGenres, setAvailableGenres] = useState<{ id: number; name: string }[]>([])
+
+  const reqId = useRef(0)
+
+  const load = useCallback(async (off: number, reset: boolean) => {
+    const id = ++reqId.current
+    if (reset) setLoading(true); else setLoadingMore(true)
+
+    const params = new URLSearchParams({ sort, offset: String(off) })
+    if (decade) params.set('decade', decade)
+    if (genre) params.set('genre', genre)
+
+    try {
+      const res = await fetch(`/api/films?${params}`)
+      const data = await res.json()
+      if (id !== reqId.current) return // a newer request exists, ignore this one
+      setMovies((prev) => {
+        if (reset) return data.movies
+        const seen = new Set(prev.map((m: Movie) => m.id))
+        return [...prev, ...data.movies.filter((m: Movie) => !seen.has(m.id))]
+      })
+      setTotal(data.total)
+    } finally {
+      if (id === reqId.current) { setLoading(false); setLoadingMore(false) }
+    }
+  }, [decade, sort, genre])
+
+  // Runs on mount and whenever any filter changes
+  useEffect(() => { load(0, true) }, [load])
 
     useEffect(() => {
     fetch('/api/films/genres')
@@ -70,32 +97,16 @@ export default function FilmsContent() {
     fetch('/api/films/decades').then(r => r.json()).then(d => setAvailableDecades(d.decades ?? [])).catch(() => {})
   }, [])
 
-   const fetch30 = useCallback(async (off: number, reset: boolean) => {
-    if (reset) setLoading(true); else setLoadingMore(true)
-    const params = new URLSearchParams({ sort, offset: String(off) })
-    if (decade) params.set('decade', decade)
-    if (genre) params.set('genre', genre)
-    const res = await fetch(`/api/films?${params}`)
-    const data = await res.json()
-      setMovies((prev) => {
-      if (reset) return data.movies
-      const existingIds = new Set(prev.map((m: Movie) => m.id))
-      const newMovies = data.movies.filter((m: Movie) => !existingIds.has(m.id))
-      return [...prev, ...newMovies]
-    })
-    setTotal(data.total)
-    setOffset(off + 30)
-    if (reset) setLoading(false); else setLoadingMore(false)
-  }, [decade, sort])
 
-   useEffect(() => { setOffset(0); fetch30(0, true) }, [decade, sort, genre])
+
+ 
 
   return (
     <div className="h-full overflow-y-auto pb-24 pt-32">
          <div className="max-w-6xl mx-auto px-4 py-6 flex gap-2 flex-wrap">
         <FilterDropdown
           label="All decades" value={decade}
-          onChange={(v) => { setDecade(v); setOffset(0) }}
+          onChange={(v) => { setDecade(v) }}
           options={[
             { label: 'All decades', value: '' },
             ...availableDecades.map((d) => ({ label: `${d}s`, value: String(d) })),
@@ -103,7 +114,7 @@ export default function FilmsContent() {
         />
         <FilterDropdown
           label="All genres" value={genre}
-          onChange={(v) => { setGenre(v); setOffset(0) }}
+          onChange={(v) => { setGenre(v) }}
           options={[
             { label: 'All genres', value: '' },
             ...availableGenres.map((g) => ({ label: g.name, value: String(g.id) })),
@@ -111,7 +122,7 @@ export default function FilmsContent() {
         />
         <FilterDropdown
           label="Sort" value={sort}
-          onChange={(v) => { setSort(v as SortOption); setOffset(0) }}
+          onChange={(v) => { setSort(v as SortOption) }}
           options={[
             { label: 'Most recent first', value: 'newest' },
             { label: 'Oldest first', value: 'oldest' },
@@ -153,10 +164,10 @@ export default function FilmsContent() {
                 </div>
               ))}
             </div>
-            {offset < total && (
+                        {movies.length < total && (
               <div className="flex justify-center mt-10">
                 <button
-                  onClick={() => fetch30(offset, false)}
+                  onClick={() => load(movies.length, false)}
                   disabled={loadingMore}
                   className="px-5 py-2 rounded-full border border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors cursor-pointer disabled:opacity-40"
                 >

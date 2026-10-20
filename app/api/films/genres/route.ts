@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+export const revalidate = 3600
+
 const TMDB_GENRES: Record<number, string> = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy',
   80: 'Crime', 99: 'Documentary', 18: 'Drama', 10751: 'Family',
@@ -12,18 +14,12 @@ const TMDB_GENRES: Record<number, string> = {
 export async function GET() {
   const supabase = await createClient()
   const { data } = await supabase
-    .from('movies')
-    .select('genre_ids')
-    .not('genre_ids', 'is', null)
+    .from('published_movies')
+    .select('primary_genre')
+    .not('primary_genre', 'is', null)
 
-  if (!data) return NextResponse.json({ genres: [] })
-
-  const idSet = new Set<number>()
-  for (const m of data) {
-    for (const id of m.genre_ids ?? []) idSet.add(id)
-  }
-
-  const genres = [...idSet]
+  const ids = new Set<number>((data ?? []).map((m: any) => m.primary_genre))
+  const genres = [...ids]
     .filter((id) => TMDB_GENRES[id])
     .map((id) => ({ id, name: TMDB_GENRES[id] }))
     .sort((a, b) => a.name.localeCompare(b.name))

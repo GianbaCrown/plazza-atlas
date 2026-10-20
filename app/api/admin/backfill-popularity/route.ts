@@ -29,6 +29,7 @@ export async function GET() {
         .update({
           popularity: score,
           genre_ids: data.genres?.map((g: any) => g.id) ?? [],
+          primary_genre: data.genres?.[0]?.id ?? null,
         })
         .eq('id', movie.id)
       updated++
