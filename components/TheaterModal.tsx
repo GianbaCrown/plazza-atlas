@@ -194,7 +194,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
               <div className="overflow-hidden mt-3">
                 {[...theater.theater_names].sort((a: any, b: any) => a.sort_order - b.sort_order).map((n: any, i: number) => (
                   <div key={n.id} className={`border-b border-zinc-800 flex items-center justify-between py-2.5 text-xs ${i > 0 ? '' : ''}`}>
-                    <span className="text-zinc-100 font-medium">{n.name}</span>
+                    <span className="text-zinc-100">{n.name}</span>
                     <span className="text-zinc-400 flex-shrink-0 ml-4">
                       {n.year_from && n.year_to ? `${n.year_from} – ${n.year_to}` : n.year_from ? `from ${n.year_from}` : n.year_to ? `until ${n.year_to}` : ''}
                     </span>
