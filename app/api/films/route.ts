@@ -3,10 +3,12 @@ import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const decade = searchParams.get('decade')
+   const decade = searchParams.get('decade')
   const sort = searchParams.get('sort') ?? 'newest'
+  const genre = searchParams.get('genre')
   const offset = Number(searchParams.get('offset') ?? 0)
   const limit = 60
+  
 
   const supabase = await createClient()
 
@@ -28,6 +30,10 @@ export async function GET(req: Request) {
 
   if (decade) {
     query = query.gte('year', Number(decade)).lte('year', Number(decade) + 9)
+  }
+
+    if (genre) {
+    query = query.contains('genre_ids', [Number(genre)])
   }
 
   if (sort === 'newest') query = query.order('year', { ascending: false })

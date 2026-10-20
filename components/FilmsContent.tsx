@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import MovieOverlayFull from './MovieOverlayFull'
 
+
 type Movie = {
   id: string; tmdb_id: number; title: string; year: number | null; poster_path: string | null
 }
@@ -55,15 +56,25 @@ export default function FilmsContent() {
   const [offset, setOffset] = useState(0)
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [availableDecades, setAvailableDecades] = useState<number[]>([])
+    const [genre, setGenre] = useState('')
+  const [availableGenres, setAvailableGenres] = useState<{ id: number; name: string }[]>([])
+
+    useEffect(() => {
+    fetch('/api/films/genres')
+      .then(r => r.json())
+      .then(d => setAvailableGenres(d.genres ?? []))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/films/decades').then(r => r.json()).then(d => setAvailableDecades(d.decades ?? [])).catch(() => {})
   }, [])
 
-  const fetch30 = useCallback(async (off: number, reset: boolean) => {
+   const fetch30 = useCallback(async (off: number, reset: boolean) => {
     if (reset) setLoading(true); else setLoadingMore(true)
     const params = new URLSearchParams({ sort, offset: String(off) })
     if (decade) params.set('decade', decade)
+    if (genre) params.set('genre', genre)
     const res = await fetch(`/api/films?${params}`)
     const data = await res.json()
       setMovies((prev) => {
@@ -77,22 +88,30 @@ export default function FilmsContent() {
     if (reset) setLoading(false); else setLoadingMore(false)
   }, [decade, sort])
 
-  useEffect(() => { setOffset(0); fetch30(0, true) }, [decade, sort])
+   useEffect(() => { setOffset(0); fetch30(0, true) }, [decade, sort, genre])
 
   return (
     <div className="h-full overflow-y-auto pb-24 pt-32">
-      <div className="max-w-6xl mx-auto px-4 py-6 flex gap-2 flex-wrap">
+         <div className="max-w-6xl mx-auto px-4 py-6 flex gap-2 flex-wrap">
         <FilterDropdown
           label="All decades" value={decade}
-          onChange={setDecade}
+          onChange={(v) => { setDecade(v); setOffset(0) }}
           options={[
             { label: 'All decades', value: '' },
             ...availableDecades.map((d) => ({ label: `${d}s`, value: String(d) })),
           ]}
         />
         <FilterDropdown
+          label="All genres" value={genre}
+          onChange={(v) => { setGenre(v); setOffset(0) }}
+          options={[
+            { label: 'All genres', value: '' },
+            ...availableGenres.map((g) => ({ label: g.name, value: String(g.id) })),
+          ]}
+        />
+        <FilterDropdown
           label="Sort" value={sort}
-          onChange={(v) => setSort(v as SortOption)}
+          onChange={(v) => { setSort(v as SortOption); setOffset(0) }}
           options={[
             { label: 'Most recent first', value: 'newest' },
             { label: 'Oldest first', value: 'oldest' },
