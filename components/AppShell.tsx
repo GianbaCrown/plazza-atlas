@@ -356,7 +356,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
                                      {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover transition duration-300" />}
                   </div>
                   <p className="text-white mt-2 font-medium text-sm">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.city}, {t.country}</p>
+                  <p className="text-xs text-zinc-400">{t.city}, {t.country}</p>
                 </Link>
               ))}
             </div>
