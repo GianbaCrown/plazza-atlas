@@ -52,7 +52,7 @@ export default function FilmsContent() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [decade, setDecade] = useState('')
-  const [sort, setSort] = useState<SortOption>('newest')
+  const [sort, setSort] = useState<SortOption>('popular')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [availableDecades, setAvailableDecades] = useState<number[]>([])
     const [genre, setGenre] = useState('')
@@ -124,11 +124,12 @@ export default function FilmsContent() {
           label="Sort" value={sort}
           onChange={(v) => { setSort(v as SortOption) }}
           options={[
+            { label: 'Most popular', value: 'popular' },
             { label: 'Most recent first', value: 'newest' },
             { label: 'Oldest first', value: 'oldest' },
             { label: 'A → Z', value: 'alpha-asc' },
             { label: 'Z → A', value: 'alpha-desc' },
-            { label: 'Most popular', value: 'popular' },
+         
           ]}
         />
       </div>
