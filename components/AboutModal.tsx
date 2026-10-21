@@ -80,7 +80,7 @@ export default function AboutModal() {
                        <p className="text-[10px] text-zinc-400 mb-8 ">The Plazza Lumière in Besançon, France, circa 1988</p>
             <hr className="border-t border-zinc-800 my-4 mt-6 mb-6" />
 
-            <p className="text-zinc-400 text-[10px]">If you want to share images, add a precision or a correction, or request for an image to be credited or taken down, please do reach out hello@plazza-atlas.cc.</p>
+            <p className="text-zinc-400 text-[10px]">If you want to share images, add a precision or a correction, or request for an image to be credited or taken down, please do reach out: hello@plazza-atlas.cc.</p>
           </div>
 
       

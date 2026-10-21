@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     .not('poster_path', 'is', null)
 
   if (decade) query = query.gte('year', Number(decade)).lte('year', Number(decade) + 9)
-  if (genre) query = query.eq('primary_genre', Number(genre))
+  if (genre) query = query.contains('genre_ids', [Number(genre)])
 
   if (sort === 'newest') query = query.order('year', { ascending: false })
   else if (sort === 'oldest') query = query.order('year', { ascending: true })

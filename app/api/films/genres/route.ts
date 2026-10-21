@@ -15,10 +15,11 @@ export async function GET() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('published_movies')
-    .select('primary_genre')
-    .not('primary_genre', 'is', null)
+    .select('genre_ids')
+    .not('genre_ids', 'is', null)
 
-  const ids = new Set<number>((data ?? []).map((m: any) => m.primary_genre))
+  const ids = new Set<number>()
+  for (const m of data ?? []) for (const id of m.genre_ids ?? []) ids.add(id)
   const genres = [...ids]
     .filter((id) => TMDB_GENRES[id])
     .map((id) => ({ id, name: TMDB_GENRES[id] }))

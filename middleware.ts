@@ -35,18 +35,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check access cookie
-  const cookie = request.cookies.get('plazza_access')
-  const sitePassword = process.env.SITE_PASSWORD
+  // GATE DISABLED: uncomment the block below to re-enable
+  // const cookie = request.cookies.get('plazza_access')
+  // const sitePassword = process.env.SITE_PASSWORD
+  //
+  // if (sitePassword && cookie?.value === sitePassword) {
+  //   return NextResponse.next()
+  // }
+  //
+  // const url = request.nextUrl.clone()
+  // url.pathname = '/gate'
+  // return NextResponse.redirect(url)
 
-  if (sitePassword && cookie?.value === sitePassword) {
-    return NextResponse.next()
-  }
-
-  // Redirect to gate
-  const url = request.nextUrl.clone()
-  url.pathname = '/gate'
-  return NextResponse.redirect(url)
+  return NextResponse.next()
 }
 
 export const config = {
