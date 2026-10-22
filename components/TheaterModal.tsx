@@ -32,68 +32,77 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   }, [])
 
   useEffect(() => {
+    let cancelled = false
     const supabase = createClient()
 
-    // Core theater + images — this must succeed
-    supabase
-      .from('theaters')
-      .select(`
-        *,
-        images (
-          id, storage_path, caption, credit, is_featured, sort_order,
-          image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) )
-        )
-      `)
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single()
-      .then(({ data, error }: { data: any; error: any }) => {
-        if (error || !data) { setLoading(false); return }
-        setTheater(data)
-        setLoading(false)
+    async function load() {
+      // 1. Core theater + images
+      const { data, error } = await supabase
+        .from('theaters')
+        .select(`
+          *,
+          images (
+            id, storage_path, caption, credit, is_featured, sort_order,
+            image_movies ( movie_id, movies ( title, year, poster_path, tmdb_id ) )
+          )
+        `)
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .single()
 
-        // Prefetch movie details
-        if (data.images) {
-          const tmdbIds = new Set<number>()
-          data.images.forEach((img: any) => {
-            img.image_movies?.forEach((im: any) => {
-              if (im.movies?.tmdb_id) tmdbIds.add(im.movies.tmdb_id)
-            })
-          })
-          tmdbIds.forEach((id) => {
-            fetch(`/api/tmdb/movie?id=${id}`)
-              .then((r) => r.json())
-              .then((d) => { movieCache.current[id] = d })
-              .catch(() => {})
-          })
-        }
+      if (cancelled) return
+      if (error || !data) { setLoading(false); return }
 
-        // Fetch sources separately — failure won't break the theater load
+      // 2. Sources + previous names in parallel (one wait instead of two pop-ins)
+      const [{ data: sources }, { data: names }] = await Promise.all([
         supabase
           .from('theater_sources')
           .select('id, source_id, source_url, sort_order, sources ( id, name, url, image_path )')
           .eq('theater_id', data.id)
-          .order('sort_order')
-          .then(({ data: sources }: { data: any }) => {
-            if (sources?.length) {
-              setTheater((prev: any) => ({ ...prev, theater_sources: sources }))
-            }
-          })
-          .catch(() => {})
-
-        // Fetch previous names separately
+          .order('sort_order'),
         supabase
           .from('theater_names')
           .select('id, name, year_from, year_to, sort_order')
           .eq('theater_id', data.id)
-          .order('sort_order')
-          .then(({ data: names }: { data: any }) => {
-            if (names?.length) {
-              setTheater((prev: any) => ({ ...prev, theater_names: names }))
-            }
+          .order('sort_order'),
+      ])
+
+      // 3. Preload the first image so it's already cached when the carousel renders
+      const first = [...(data.images ?? [])].sort((a: any, b: any) => a.sort_order - b.sort_order)[0]
+      if (first) {
+        await new Promise<void>((resolve) => {
+          const img = new window.Image()
+          const timeout = setTimeout(resolve, 2500) // never block longer than 2.5s
+          img.onload = img.onerror = () => { clearTimeout(timeout); resolve() }
+          img.src = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/theater-images/${first.storage_path}`
+        })
+      }
+      if (cancelled) return
+
+      // 4. Reveal everything at once
+      setTheater({ ...data, theater_sources: sources ?? [], theater_names: names ?? [] })
+      setLoading(false)
+
+      // 5. Prefetch movie details AFTER reveal, so they don't compete with images
+      setTimeout(() => {
+        if (cancelled) return
+        const tmdbIds = new Set<number>()
+        data.images?.forEach((img: any) =>
+          img.image_movies?.forEach((im: any) => {
+            if (im.movies?.tmdb_id) tmdbIds.add(im.movies.tmdb_id)
           })
-          .catch(() => {})
-      })
+        )
+        tmdbIds.forEach((id) => {
+          fetch(`/api/tmdb/movie?id=${id}`)
+            .then((r) => r.json())
+            .then((d) => { movieCache.current[id] = d })
+            .catch(() => {})
+        })
+      }, 800)
+    }
+
+    load()
+    return () => { cancelled = true }
   }, [slug])
 
    function close() {
@@ -143,7 +152,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
       ) : !theater ? (
         <p className="text-zinc-600 text-sm p-8">Theater not found.</p>
       ) : (
-        <>
+         <div className="modal-content-appear">
           <div className="px-4 md:px-12 py-8 pr-8">
             {theater.is_open && (
               <div className="inline-flex items-center gap-2 mb-3">
@@ -251,7 +260,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )

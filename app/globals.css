@@ -175,4 +175,11 @@ button, a, [role="button"] {
   animation: fadeInUp 300ms ease forwards;
 }
 
+@keyframes modalContentIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
+.modal-content-appear {
+  animation: modalContentIn 250ms ease both;
+}

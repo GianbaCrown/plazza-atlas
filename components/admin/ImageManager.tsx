@@ -49,7 +49,7 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
     let current = [...images]
     for (const file of Array.from(files)) {
       const path = `${theaterId}/${Date.now()}-${file.name}`
-      const { error: uploadError } = await supabase.storage.from('theater-images').upload(path, file)
+      const { error: uploadError } = await supabase.storage.from('theater-images').upload(path, file, { cacheControl: '31536000', upsert: false })
       if (uploadError) { alert(uploadError.message); continue }
 
       const newImage: ImageRecord = {

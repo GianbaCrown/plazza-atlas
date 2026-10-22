@@ -46,6 +46,14 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
     localCache.current = { ...localCache.current, ...movieCache }
   }, [movieCache])
 
+    useEffect(() => {
+    const nextImg = images[currentIndex + 1]
+    if (nextImg) {
+      const img = new window.Image()
+      img.src = imgUrl(nextImg.storage_path)
+    }
+  }, [currentIndex, images])
+
   function prev() {
     setCurrentIndex((i) => Math.max(0, i - 1))
   }
@@ -99,6 +107,8 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
                   alt={img.caption ?? theaterName}
                   className="w-full h-full object-contain cursor-zoom-in"
                   loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={i === 0 ? 'high' : 'auto'}
+                  decoding="async"
                   onClick={() => setOverlayImage(img)}
                   draggable={false}
                 />
