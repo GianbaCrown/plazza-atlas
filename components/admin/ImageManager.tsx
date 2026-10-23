@@ -7,6 +7,7 @@ import { makeThumbBlob } from '@/lib/makeThumb'
 interface ImageRecord {
   id: string
   storage_path: string
+  thumb_path?: string | null
   caption: string
   credit: string
   is_featured: boolean
