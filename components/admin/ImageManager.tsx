@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import MovieAutosuggest from './MovieAutosuggest'
+import { makeThumbBlob } from '@/lib/makeThumb'
 
 interface ImageRecord {
   id: string
@@ -40,6 +41,17 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
     })
   }
 
+  async function uploadThumb(file: File): Promise<string | null> {
+    const blob = await makeThumbBlob(file)
+    if (!blob) return null
+    const ext = blob.type === 'image/webp' ? 'webp' : 'jpg'
+    const thumbPath = `${theaterId}/thumbs/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`
+    const { error } = await supabase.storage
+      .from('theater-images')
+      .upload(thumbPath, blob, { cacheControl: '31536000', upsert: false })
+    return error ? null : thumbPath
+  }
+
        
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -51,10 +63,12 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
       const path = `${theaterId}/${Date.now()}-${file.name}`
       const { error: uploadError } = await supabase.storage.from('theater-images').upload(path, file, { cacheControl: '31536000', upsert: false })
       if (uploadError) { alert(uploadError.message); continue }
+            const thumbPath = await uploadThumb(file)
 
-      const newImage: ImageRecord = {
+           const newImage: ImageRecord = {
         id: crypto.randomUUID(),
         storage_path: path,
+        thumb_path: thumbPath,
         caption: '',
         credit: '',
         is_featured: current.length === 0,
@@ -64,7 +78,7 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
 
       if (!isPending) {
         const { data, error } = await supabase.from('images')
-          .insert({ theater_id: theaterId, storage_path: path, caption: '', credit: '', is_featured: newImage.is_featured, sort_order: newImage.sort_order })
+          .insert({ theater_id: theaterId, storage_path: path, thumb_path: thumbPath, caption: '', credit: '', is_featured: newImage.is_featured, sort_order: newImage.sort_order })
           .select('*, image_movies(movie_id, movies(id, title, year, poster_path))').single()
         if (error) { alert(error.message); continue }
         current = [...current, data]
@@ -78,17 +92,40 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
     e.target.value = ''
   }
 
-  async function handleReplace(id: string, oldPath: string, e: React.ChangeEvent<HTMLInputElement>) {
+   async function handleReplace(id: string, oldPath: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const oldThumb = images.find((i) => i.id === id)?.thumb_path
     const newPath = `${theaterId}/${Date.now()}-${file.name}`
-    const { error: uploadError } = await supabase.storage.from('theater-images').upload(newPath, file)
+    const { error: uploadError } = await supabase.storage.from('theater-images').upload(newPath, file, { cacheControl: '31536000', upsert: false })
     if (uploadError) { alert(uploadError.message); return }
-    await supabase.storage.from('theater-images').remove([oldPath])
+    const newThumb = await uploadThumb(file)
+    await supabase.storage.from('theater-images').remove([oldPath, ...(oldThumb ? [oldThumb] : [])])
     if (!isPending) {
-      await supabase.from('images').update({ storage_path: newPath }).eq('id', id)
+      await supabase.from('images').update({ storage_path: newPath, thumb_path: newThumb }).eq('id', id)
     }
-    updateLocal(id, { storage_path: newPath })
+    updateLocal(id, { storage_path: newPath, thumb_path: newThumb })
+    e.target.value = ''
+  }
+
+    const replaceThumbInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+
+  async function handleReplaceThumb(id: string, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const oldThumb = images.find((i) => i.id === id)?.thumb_path
+    const ext = file.type === 'image/webp' ? 'webp' : file.type === 'image/png' ? 'png' : 'jpg'
+    const newThumb = `${theaterId}/thumbs/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`
+    // Uploaded as-is: your own file is used exactly as provided
+    const { error: uploadError } = await supabase.storage
+      .from('theater-images')
+      .upload(newThumb, file, { cacheControl: '31536000', upsert: false })
+    if (uploadError) { alert(uploadError.message); return }
+    if (oldThumb) await supabase.storage.from('theater-images').remove([oldThumb])
+    if (!isPending) {
+      await supabase.from('images').update({ thumb_path: newThumb }).eq('id', id)
+    }
+    updateLocal(id, { thumb_path: newThumb })
     e.target.value = ''
   }
 
@@ -113,7 +150,8 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
 
   async function deleteImage(id: string, storagePath: string) {
     if (!confirm('Delete this image?')) return
-    await supabase.storage.from('theater-images').remove([storagePath])
+    const thumb = images.find((i) => i.id === id)?.thumb_path
+    await supabase.storage.from('theater-images').remove([storagePath, ...(thumb ? [thumb] : [])])
     if (!isPending) await supabase.from('images').delete().eq('id', id)
     setImages((prev) => {
       const updated = prev.filter((img) => img.id !== id)
@@ -189,13 +227,36 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
             >
               Replace
             </button>
-            <input
+                        <input
               ref={(el) => { replaceInputRefs.current[img.id] = el }}
               type="file"
               accept="image/*"
               className="hidden"
               onChange={(e) => handleReplace(img.id, img.storage_path, e)}
             />
+
+            {/* Thumbnail */}
+            <div className="mt-2 flex items-center gap-2">
+              {img.thumb_path ? (
+                <img src={baseUrl + img.thumb_path} className="w-10 h-10 object-cover rounded border" alt="" />
+              ) : (
+                <div className="w-10 h-10 rounded border border-dashed border-gray-300 flex items-center justify-center text-[9px] text-gray-400">none</div>
+              )}
+              <button
+                type="button"
+                onClick={() => replaceThumbInputRefs.current[img.id]?.click()}
+                className="text-xs text-amber-600 hover:underline"
+              >
+                {img.thumb_path ? 'Replace thumb' : 'Add thumb'}
+              </button>
+              <input
+                ref={(el) => { replaceThumbInputRefs.current[img.id] = el }}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleReplaceThumb(img.id, e)}
+              />
+            </div>
           </div>
 
           <div className="flex-1 space-y-2 min-w-0">

@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, useLayoutEffect, useCallback } from 'react
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import Supercluster from 'supercluster'
-import Image from 'next/image'
 import Link from 'next/link'
 import SiteHeader from './SiteHeader'
 import ConditionalBottomNav from './ConditionalBottomNav'
@@ -157,13 +156,16 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
     if (!count) return
     const offset = Math.floor(Math.random() * count)
     const { data } = await supabase.from('theaters')
-      .select('id, name, slug, lat, lng, city, country, year_opened, year_closed, images(storage_path, is_featured)')
+      .select('id, name, slug, lat, lng, city, country, year_opened, year_closed, images(storage_path, thumb_path, is_featured)')
       .eq('status', 'published').range(offset, offset)
     if (data?.[0]) {
       const raw = data[0] as any
       flyToTheater({
         ...raw,
-        image_path: raw.images?.find((i: any) => i.is_featured)?.storage_path ?? raw.images?.[0]?.storage_path ?? null,
+              image_path:
+          (raw.images?.find((i: any) => i.is_featured) ?? raw.images?.[0])?.thumb_path
+          ?? (raw.images?.find((i: any) => i.is_featured) ?? raw.images?.[0])?.storage_path
+          ?? null,
       })
     }
   }
@@ -352,8 +354,14 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
                 <Link key={t.id} href={`/theaters/${t.slug}`} className="group cursor-pointer theater-card-appear">
                   <div className="border border-zinc-800 aspect-[3/2] relative bg-gray-200 rounded-sm overflow-hidden transition-all duration-400 group-hover:border-zinc-600">
                    
-               {/*     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />} */}
-                                     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover transition duration-300" />}
+               {/*     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill className="object-cover group-hover:scale-102 transition duration-300" />} 
+                                     {t.image_path && <Image src={imageUrl(t.image_path)!} alt={t.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover transition duration-300" />} */}
+                 
+                 {t.image_path && (
+  // eslint-disable-next-line @next/next/no-img-element
+  <img src={imageUrl(t.image_path)!} alt={t.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition duration-300" />
+)}
+                 
                   </div>
                   <p className="text-white mt-2 font-medium text-sm">{t.name}</p>
                   <p className="text-xs text-zinc-400">{t.city}, {t.country}</p>
