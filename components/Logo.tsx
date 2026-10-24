@@ -16,7 +16,7 @@ export default function Logo({ variant = 'dark' }: { variant?: 'light' | 'dark' 
 
     <Link href="/" className="inline-flex items-center select-none">
       <img
-        src="/logo-plazza-atlas-amber.svg"
+        src="/logo-plazza-atlas-amber-2.svg"
         alt="Plazza Atlas"
         
         style={{
