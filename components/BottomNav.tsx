@@ -21,7 +21,7 @@ export default function BottomNav({ onRandom, onSearchOpen }: Props) {
     if (data?.[0]) router.push(`/theaters/${data[0].slug}`)
   }
 
-  const btnClass = "pl-4 pr-4 text-xs min-w-24 h-9 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-md border border-zinc-600 text-zinc-300 hover:text-zinc-100 hover:border-zinc-400 hover:bg-zinc-800/60 transition-all duration-150 cursor-pointer"
+  const btnClass = "shadow-md pl-4 pr-4 text-xs min-w-24 h-9 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-md border border-zinc-600 text-zinc-300 hover:text-zinc-100 hover:border-zinc-400 hover:bg-zinc-800/60 transition-all duration-150 cursor-pointer"
 
   return (
     <div className="fixed bottom-4 pl-2 left-4 z-30 flex flex-col gap-2">
