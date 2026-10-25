@@ -192,7 +192,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
                 <div className="h-2 bg-white/10 animate-pulse rounded w-2/3" />
               </div>
             ) : full?.overview ? (
-              <p className="text-zinc-300 text-xs leading-relaxed line-clamp-6">{full.overview}</p>
+              <p className="text-zinc-300 text-xs leading-relaxed">{full.overview}</p>
             ) : (
               <p className="text-white/30 text-xs italic">No synopsis available.</p>
             )}
