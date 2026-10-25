@@ -149,7 +149,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
               <img
                 src={`https://image.tmdb.org/t/p/w342${poster}`}
                 alt={String(title)}
-                className="w-full h-full object-cover rounded-xs"
+                className="w-full object-cover rounded-xs"
                 style={{ minHeight: '160px', display: 'block' }}
               />
             ) : (
