@@ -158,7 +158,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
             <img
               src={`https://image.tmdb.org/t/p/w342${poster}`}
               alt={title}
-              className="w-full h-full rounded-xs object-cover"
+              className="w-full rounded-xs object-cover"
               style={{ minHeight: '200px' }}
             />
           ) : (
