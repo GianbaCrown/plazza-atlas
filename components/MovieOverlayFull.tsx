@@ -166,7 +166,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
               </p>
             </div>
             {full?.overview && (
-              <p className="text-zinc-300 text-xs leading-relaxed line-clamp-4">{full.overview}</p>
+              <p className="text-zinc-300 text-xs leading-relaxed line-clamp-none">{full.overview}</p>
             )}
             {tmdbUrl && (
               <a
