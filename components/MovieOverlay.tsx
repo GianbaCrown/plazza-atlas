@@ -142,7 +142,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
       />
 
       <div
-        className="p-2 relative z-10 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
+        className="p-4 relative z-10 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden shadow-2xl flex flex-row w-full max-w-md"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(16px)',
@@ -169,7 +169,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
         </div>
 
         {/* Info — right, left-aligned */}
-        <div className="flex-1 p-4 flex flex-col gap-2.5 min-w-0">
+        <div className="flex-1 px-4 flex flex-col gap-2.5 min-w-0">
           <div className="pr-5">
             <h2 className="text-white font-bold text-sm leading-snug">{title}</h2>
             <p className="text-zinc-500 text-xs mt-0.5 flex items-center gap-1 flex-wrap">
@@ -230,7 +230,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
           onClick={handleClose}
           className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-100 transition cursor-pointer"
         >
-                   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" stroke-linejoin="round" strokeWidth="2" d="M6 18L17.94 6M18 18L6.06 6"/></svg>
+                   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L17.94 6M18 18L6.06 6"/></svg>
 
         </button>
       </div>

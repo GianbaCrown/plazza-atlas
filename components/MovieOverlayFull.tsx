@@ -142,7 +142,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top section — poster + info */}
-        <div className="flex flex-row p-2 flex-shrink-0 mb-4 bg-zinc-950 border border-zinc-800 rounded-sm">
+        <div className="flex flex-row p-4 flex-shrink-0 mb-4 bg-zinc-950 border border-zinc-800 rounded-sm">
           <div className="w-32 flex-shrink-0">
             {poster ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -158,7 +158,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
               </div>
             )}
           </div>
-          <div className="flex-1 p-4 flex flex-col gap-2 min-w-0">
+          <div className="flex-1 px-4 flex flex-col gap-2 min-w-0">
             <div className="pr-5">
               <h2 className="text-white font-semibold text-sm leading-snug">{title}</h2>
               <p className="text-zinc-400 text-xs mt-0.5">
