@@ -150,7 +150,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
             <span className="text-[10px] text-zinc-300 leading-snug flex-1">{current.caption}</span>
           )}
           {current.credit && (
-            <span className="text-[10px] text-zinc-500 leading-snug flex-shrink-0 ml-auto">Photography: {current.credit}</span>
+            <span className="text-[10px] text-zinc-400 leading-snug flex-shrink-0 ml-auto">Photography: {current.credit}</span>
           )}
         </div>
 

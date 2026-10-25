@@ -198,7 +198,7 @@ export default function MovieOverlayFull({ movie, onClose }: Props) {
                 >
                   <div>
                     <p className="text-zinc-200 text-xs font-medium">{t.name}</p>
-                    <p className="text-zinc-600 text-[10px]">{[t.city, t.country].filter(Boolean).join(', ')}</p>
+                    <p className="text-zinc-400 text-[10px]">{[t.city, t.country].filter(Boolean).join(', ')}</p>
                   </div>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0 ml-2">
                     <polyline points="9 18 15 12 9 6"/>
