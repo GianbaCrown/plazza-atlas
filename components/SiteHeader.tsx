@@ -154,20 +154,20 @@ export default function SiteHeader({
         </button> */}
 
         <div className="hidden sm:block">
-          <Toggle
-            trackRef={trackRefDesktop}
-            mapRef={mapBtnRefDesktop}
-            listRef={listBtnRefDesktop}
-            filmsRef={filmsBtnRefDesktop}
-          />
+          {Toggle({
+  trackRef: trackRefDesktop,
+  mapRef: mapBtnRefDesktop,
+  listRef: listBtnRefDesktop,
+  filmsRef: filmsBtnRefDesktop,
+})}
         </div>
         <div className="sm:hidden">
-          <Toggle
-            trackRef={trackRefMobile}
-            mapRef={mapBtnRefMobile}
-            listRef={listBtnRefMobile}
-            filmsRef={filmsBtnRefMobile}
-          />
+          {Toggle({
+  trackRef: trackRefMobile,
+  mapRef: mapBtnRefMobile,
+  listRef: listBtnRefMobile,
+  filmsRef: filmsBtnRefMobile,
+})}
         </div>
       </div>
 

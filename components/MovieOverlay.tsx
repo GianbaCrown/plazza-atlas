@@ -152,7 +152,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
         onTouchMove={(e) => e.stopPropagation()}
       >
         {/* Poster — left, full height, fixed width */}
-        <div className="w-36 flex-shrink-0 bg-black self-stretch">
+        <div className="w-36 flex-shrink-0 self-stretch">
           {poster ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
