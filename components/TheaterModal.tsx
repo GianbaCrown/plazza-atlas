@@ -140,6 +140,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   const mobileTransform = mounted ? `translateY(${dragOffset}px)` : 'translateY(100%)'
   const desktopTransform = mounted ? 'translateX(0)' : 'translateX(100%)'
 
+
     const modalContent = (
     <div className="bg-black/60 rounded-none border-0 sm:rounded-lg sm:border sm:border-zinc-800 pb-4">
       {loading ? (
@@ -311,6 +312,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
             style={{
               width: 'clamp(360px, 60vw, 900px)',
               transform: desktopTransform,
+      
               transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
             }}
             onClick={(e) => e.stopPropagation()}

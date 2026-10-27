@@ -152,7 +152,7 @@ export default function FilmsContent() {
                     <img
                       src={`https://image.tmdb.org/t/p/w342${m.poster_path}`}
                       alt={m.title}
-                      className="w-full aspect-[2/3] object-cover rounded-sm border border-zinc-800 transition-all duration-400 custom-shadow group-hover:border-zinc-600"
+                      className="w-full aspect-[2/3] object-cover rounded-sm border-overlay transition-all duration-400 custom-shadow"
                     />
                   ) : (
                     <div className="w-full aspect-[2/3] bg-zinc-800 rounded-lg flex items-center justify-center text-[10px] text-zinc-600">No poster</div>

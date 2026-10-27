@@ -200,7 +200,7 @@ export default function TheaterImageBlock({ images, theaterName, movieCache = {}
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={`https://image.tmdb.org/t/p/w342${im.movies.poster_path}`}
-                    className="border border-zinc-800 w-full aspect-[2/3] object-cover rounded shadow-md transition-all duration-200 hover:border-zinc-600"
+                    className="border-overlay w-full aspect-[2/3] object-cover rounded shadow-md transition-all duration-200"
                     alt={im.movies.title}
                   />
                 ) : (
