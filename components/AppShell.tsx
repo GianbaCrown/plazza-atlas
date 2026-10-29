@@ -279,17 +279,22 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
           el.onmouseleave = scheduleClose
           el.onclick = (e) => { e.stopPropagation(); collapseAttribution(); if (!theater) return; cancelClose(); preventMapClose = true; openPopup(theater); setTimeout(() => { preventMapClose = false }, 100) }
         }
-                const visible = isPointOnFrontOfGlobe(lng, lat)
-        el.style.opacity = visible ? '1' : '0'
-        el.style.pointerEvents = visible ? 'auto' : 'none'
-        markersOnScreen.push(
-          new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
+            
+               markersOnScreen.push(
+          new maplibregl.Marker({ element: el, opacityWhenCovered: '0' }).setLngLat([lng, lat]).addTo(map)
         )
       })
     }
 
     map.on('load', () => { renderClusters(); setMapReady(true) })
     map.on('moveend', renderClusters)
+
+        map.on('render', () => {
+      markersOnScreen.forEach((m) => {
+        const el = m.getElement()
+        el.style.pointerEvents = el.style.opacity === '0' ? 'none' : 'auto'
+      })
+    })
 
     if (theaters.length > 0) {
       map.on('load', () => {
