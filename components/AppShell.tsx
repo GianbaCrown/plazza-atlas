@@ -180,7 +180,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       attributionControl: { compact: true },
     })
     mapRef.current = map
-    popupRef.current = new maplibregl.Popup({ closeButton: false, closeOnClick: true, offset: 16, maxWidth: '240px' })
+    popupRef.current = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 16, maxWidth: '240px' })
 
        popupRef.current.on('open', () => {
       const el = popupRef.current!.getElement()
@@ -211,16 +211,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       map.setZoom(map.getZoom() - 4)
     }
 
-    const index = new Supercluster({ radius: 60, maxZoom: 16 })
-    index.load(theaters.map((t) => ({
-      type: 'Feature',
-      properties: { cluster: false, theaterId: t.id },
-      geometry: { type: 'Point', coordinates: [t.lng, t.lat] },
-    })) as any)
-
-    const markersOnScreen: maplibregl.Marker[] = []
     let closeTimer: ReturnType<typeof setTimeout> | undefined
-    let preventMapClose = false
 
     function scheduleClose() { closeTimer = setTimeout(() => popupRef.current?.remove(), 2000) }
     function cancelClose() { clearTimeout(closeTimer) }
@@ -236,65 +227,106 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       el.onmouseleave = scheduleClose
     }
 
-    map.on('click', () => { if (!preventMapClose) popupRef.current?.remove() })
-
-          function isPointOnFrontOfGlobe(lng: number, lat: number): boolean {
-      const center = map.getCenter()
-      const lat1 = center.lat * Math.PI / 180
-      const lng1 = center.lng * Math.PI / 180
-      const lat2 = lat * Math.PI / 180
-      const lng2 = lng * Math.PI / 180
-      // Dot product of the two unit vectors — positive means front hemisphere
-      const cos = Math.sin(lat1) * Math.sin(lat2) +
-                  Math.cos(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1)
-      return cos > 0.05 // small positive threshold avoids edge flicker
+    function popupForEvent(e: any) {
+      const id = e.features?.[0]?.properties?.id
+      const theater = theatersRef.current.find((t) => t.id === id)
+      if (!theater) return
+      cancelClose()
+      if (theater.image_path) { const i = new window.Image(); i.src = imageUrl(theater.image_path)! }
+      openPopup(theater)
     }
 
-    function renderClusters() {
-      markersOnScreen.forEach(m => m.remove()); markersOnScreen.length = 0
-      const bounds = map.getBounds()
-      const bbox: [number, number, number, number] = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]
-      const zoom = Math.floor(map.getZoom())
-      index.getClusters(bbox, zoom).forEach((c: any) => {
-        const [lng, lat] = c.geometry.coordinates
-        const el = document.createElement('div')
-        if (c.properties.cluster) {
-          el.textContent = String(c.properties.point_count)
-          el.style.cssText = 'background:#c8a96e;color:#1a1a2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;'
-          el.onclick = (e) => {
-            e.stopPropagation(); collapseAttribution()
-            const leaves = index.getLeaves(c.properties.cluster_id, Infinity)
-            if (leaves.length > 0) {
-              const lngs = leaves.map((l: any) => l.geometry.coordinates[0])
-              const lats = leaves.map((l: any) => l.geometry.coordinates[1])
-              map.fitBounds(new maplibregl.LngLatBounds([Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]), { padding: 80, maxZoom: 14, duration: 400 })
-            } else {
-              map.easeTo({ center: [lng, lat], zoom: zoom + 3, duration: 400 })
-            }
-          }
-        } else {
-          el.style.cssText = 'background:#c8a96e;width:14px;height:14px;border-radius:50%;border:2px solid #1a1a2e;cursor:pointer;'
-          const theater = theatersRef.current.find(t => t.id === c.properties.theaterId)
-          el.onmouseenter = () => { if (!theater) return; cancelClose(); if (theater.image_path) { const i = new window.Image(); i.src = imageUrl(theater.image_path)! }; openPopup(theater) }
-          el.onmouseleave = scheduleClose
-          el.onclick = (e) => { e.stopPropagation(); collapseAttribution(); if (!theater) return; cancelClose(); preventMapClose = true; openPopup(theater); setTimeout(() => { preventMapClose = false }, 100) }
-        }
-            
-               markersOnScreen.push(
-          new maplibregl.Marker({ element: el, opacityWhenCovered: '0' }).setLngLat([lng, lat]).addTo(map)
+    map.on('load', () => {
+      // Theaters as a native, clustered data source
+      map.addSource('theaters', {
+        type: 'geojson',
+        cluster: true,
+        clusterRadius: 60,
+        clusterMaxZoom: 16,
+        data: {
+          type: 'FeatureCollection',
+          features: theaters.map((t) => ({
+            type: 'Feature',
+            properties: { id: t.id },
+            geometry: { type: 'Point', coordinates: [t.lng, t.lat] },
+          })),
+        } as any,
+      })
+
+      // Cluster bubbles
+      map.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'theaters',
+        filter: ['has', 'point_count'],
+        paint: { 'circle-color': '#c8a96e', 'circle-radius': 18 },
+      })
+
+      // Cluster numbers
+      map.addLayer({
+        id: 'cluster-count',
+        type: 'symbol',
+        source: 'theaters',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': ['get', 'point_count_abbreviated'],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': 13,
+          'text-allow-overlap': true,
+        },
+        paint: { 'text-color': '#1a1a2e' },
+      })
+
+      // Single theaters
+      map.addLayer({
+        id: 'theater-points',
+        type: 'circle',
+        source: 'theaters',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': '#c8a96e',
+          'circle-radius': 7,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#1a1a2e',
+        },
+      })
+
+      // Single theater: hover (desktop) and tap/click (mobile + desktop)
+      map.on('mouseenter', 'theater-points', (e) => { map.getCanvas().style.cursor = 'pointer'; popupForEvent(e) })
+      map.on('mouseleave', 'theater-points', () => { map.getCanvas().style.cursor = ''; scheduleClose() })
+      map.on('click', 'theater-points', (e) => { collapseAttribution(); popupForEvent(e) })
+
+      // Cluster: one click zooms to fit everything inside it
+      map.on('mouseenter', 'clusters', () => { map.getCanvas().style.cursor = 'pointer' })
+      map.on('mouseleave', 'clusters', () => { map.getCanvas().style.cursor = '' })
+      map.on('click', 'clusters', async (e) => {
+        collapseAttribution()
+        const feature = e.features?.[0]
+        if (!feature) return
+        const source = map.getSource('theaters') as maplibregl.GeoJSONSource
+        const leaves = await source.getClusterLeaves(feature.properties.cluster_id, 1000, 0)
+        if (!leaves.length) return
+        const lngs = leaves.map((l: any) => l.geometry.coordinates[0])
+        const lats = leaves.map((l: any) => l.geometry.coordinates[1])
+        map.fitBounds(
+          new maplibregl.LngLatBounds(
+            [Math.min(...lngs), Math.min(...lats)],
+            [Math.max(...lngs), Math.max(...lats)]
+          ),
+          { padding: 80, maxZoom: 14, duration: 400 }
         )
       })
-    }
 
-    map.on('load', () => { renderClusters(); setMapReady(true) })
-    map.on('moveend', renderClusters)
-
-        map.on('render', () => {
-      markersOnScreen.forEach((m) => {
-        const el = m.getElement()
-        el.style.pointerEvents = el.style.opacity === '0' ? 'none' : 'auto'
+      // Click on empty map closes the popup (clicks on dots are excluded)
+      map.on('click', (e) => {
+        const hit = map.queryRenderedFeatures(e.point, { layers: ['theater-points', 'clusters'] })
+        if (!hit.length) popupRef.current?.remove()
       })
+
+      setMapReady(true)
     })
+
+
 
     if (theaters.length > 0) {
       map.on('load', () => {
