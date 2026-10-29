@@ -218,7 +218,7 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
       geometry: { type: 'Point', coordinates: [t.lng, t.lat] },
     })) as any)
 
-    const markersOnScreen: maplibregl.Marker[] = []
+    const markers = new Map<string, maplibregl.Marker>()
     let closeTimer: ReturnType<typeof setTimeout> | undefined
     let preventMapClose = false
 
@@ -251,12 +251,17 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
     }
 
     function renderClusters() {
-      markersOnScreen.forEach(m => m.remove()); markersOnScreen.length = 0
       const bounds = map.getBounds()
       const bbox: [number, number, number, number] = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]
       const zoom = Math.floor(map.getZoom())
+      const wanted = new Set<string>()
+
       index.getClusters(bbox, zoom).forEach((c: any) => {
         const [lng, lat] = c.geometry.coordinates
+        const key = c.properties.cluster ? `c-${c.properties.cluster_id}` : `t-${c.properties.theaterId}`
+        wanted.add(key)
+        if (markers.has(key)) return // already on the map: leave it untouched
+
         const el = document.createElement('div')
         if (c.properties.cluster) {
           el.textContent = String(c.properties.point_count)
@@ -274,22 +279,40 @@ export default function AppShell({ theaters, initialView }: { theaters: Theater[
           }
         } else {
           el.style.cssText = 'background:#c8a96e;width:14px;height:14px;border-radius:50%;border:2px solid #1a1a2e;cursor:pointer;'
-          const theater = theatersRef.current.find(t => t.id === c.properties.theaterId)
-          el.onmouseenter = () => { if (!theater) return; cancelClose(); if (theater.image_path) { const i = new window.Image(); i.src = imageUrl(theater.image_path)! }; openPopup(theater) }
+          const theater = theatersRef.current.find((t) => t.id === c.properties.theaterId)
+          el.onmouseenter = () => {
+            if (!theater) return
+            cancelClose()
+            if (theater.image_path) { const i = new window.Image(); i.src = imageUrl(theater.image_path)! }
+            openPopup(theater)
+          }
           el.onmouseleave = scheduleClose
-          el.onclick = (e) => { e.stopPropagation(); collapseAttribution(); if (!theater) return; cancelClose(); preventMapClose = true; openPopup(theater); setTimeout(() => { preventMapClose = false }, 100) }
+          el.onclick = (e) => {
+            e.stopPropagation(); collapseAttribution()
+            if (!theater) return
+            cancelClose(); preventMapClose = true; openPopup(theater)
+            setTimeout(() => { preventMapClose = false }, 100)
+          }
         }
-                const visible = isPointOnFrontOfGlobe(lng, lat)
-        el.style.opacity = visible ? '1' : '0'
-        el.style.pointerEvents = visible ? 'auto' : 'none'
-        markersOnScreen.push(
-          new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
-        )
+
+        markers.set(key, new maplibregl.Marker({ element: el, opacityWhenCovered: '0' }).setLngLat([lng, lat]).addTo(map))
+      })
+
+      // Remove only the dots that are no longer part of the current clusters
+      markers.forEach((marker, key) => {
+        if (!wanted.has(key)) { marker.remove(); markers.delete(key) }
       })
     }
 
     map.on('load', () => { renderClusters(); setMapReady(true) })
     map.on('moveend', renderClusters)
+
+        map.on('render', () => {
+      markers.forEach((m) => {
+        const el = m.getElement()
+        el.style.pointerEvents = el.style.opacity === '0' ? 'none' : 'auto'
+      })
+    })
 
     if (theaters.length > 0) {
       map.on('load', () => {
