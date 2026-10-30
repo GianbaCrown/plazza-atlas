@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import MovieOverlayFull from './MovieOverlayFull'
 
 
+
 type Movie = {
   id: string; tmdb_id: number; title: string; year: number | null; poster_path: string | null
 }

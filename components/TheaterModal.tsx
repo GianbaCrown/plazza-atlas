@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import TheaterImageBlock from './TheaterImageBlock'
 
+
 export default function TheaterModal({ slug, onClose }: { slug: string; onClose?: () => void }) {
   const router = useRouter()
   const [theater, setTheater] = useState<any>(null)
@@ -14,6 +15,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   const touchStartY = useRef(0)
   const [dragOffset, setDragOffset] = useState(0)
   const isDragging = useRef(false)
+    const [closing, setClosing] = useState(false)
     const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 640 : false
   )
@@ -106,7 +108,8 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
   }, [slug])
 
    function close() {
-    setMounted(false)
+    if (closing) return
+    requestAnimationFrame(() => setClosing(true))
     setTimeout(() => {
       if (onClose) onClose()
       else router.back()
@@ -266,13 +269,21 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
     </div>
   )
 
+    const exitStyle = closing
+    ? {
+        opacity: 0,
+        transform: 'translateY(16px)',
+        transition: 'opacity 200ms ease, transform 200ms cubic-bezier(0.32, 0, 0.18, 1)',
+      }
+    : {}
+
     return (
     <div className="fixed inset-0 z-50">
 
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
-        style={{ opacity: mounted ? 1 : 0 }}
+       style={{ opacity: mounted && !closing ? 1 : 0 }}
         onClick={close}
       />
 
@@ -285,6 +296,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
             transform: mobileTransform,
             transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
             paddingBottom: 'env(safe-area-inset-bottom)',
+            ...exitStyle
           }}
         >
           <button
@@ -314,6 +326,7 @@ export default function TheaterModal({ slug, onClose }: { slug: string; onClose?
               transform: desktopTransform,
       
               transition: 'transform 220ms cubic-bezier(0.32, 0, 0.18, 1)',
+              ...exitStyle
             }}
             onClick={(e) => e.stopPropagation()}
           >

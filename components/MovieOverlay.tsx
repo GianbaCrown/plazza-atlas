@@ -53,7 +53,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
 
 
   const [full, setFull] = useState<FullMovie | null>(prefetched ?? null)
-  const [loading, setLoading] = useState(!prefetched)
+  const loading = false
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -208,9 +208,7 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
               View on TMDB →
             </a>
           )}
-        </div>
-
-                    {affiliateLinks.length > 0 && (
+          {affiliateLinks.length > 0 && (
               <div className="mt-3 pt-3 border-t border-zinc-800 space-y-1.5">
                 {affiliateLinks.map((link) => (
                   <a
@@ -225,6 +223,9 @@ export default function MovieOverlay({ movie, onClose, prefetched }: Props) {
                 ))}
               </div>
             )}
+        </div>
+
+                    
 
         <button
           onClick={handleClose}
