@@ -11,11 +11,11 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: 'Plazza Atlas',
-  description: 'The world map of movie wonder.',
+  title: 'Plazza Atlas | The World Map of Movie Wonder',
+  description: 'Explore the globe to discover movie theatres from yesteryears, and find out what was playing at the time.',
   openGraph: {
-    title: 'Plazza Atlas',
-    description: 'The world map of movie wonder.',
+    title: 'Plazza Atlas | The World Map of Movie Wonder',
+    description: 'Explore the globe to discover movie theatres from yesteryears, and find out what was playing at the time.',
     siteName: 'Plazza Atlas',
     images: [
       {
