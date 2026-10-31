@@ -8,6 +8,7 @@ interface ImageRecord {
   id: string
   storage_path: string
   thumb_path?: string | null
+  year?: number | null
   caption: string
   credit: string
   is_featured: boolean
@@ -27,6 +28,8 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
   const [images, setImages] = useState<ImageRecord[]>(initialImages ?? [])
   const [uploading, setUploading] = useState(false)
   const replaceInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+    const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: currentYear - 1899 }, (_, i) => currentYear - i)
 
   const baseUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/theater-images/`
 
@@ -273,6 +276,15 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
               onBlur={(e) => updateImageField(img.id, { credit: e.target.value })}
               className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
+
+                        <select
+              value={img.year ?? ''}
+              onChange={(e) => updateImageField(img.id, { year: e.target.value ? Number(e.target.value) : null })}
+              className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">Year (optional)</option>
+              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
             <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
               <input
                 type="radio"
