@@ -10,6 +10,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/admin/submissions">Submissions</Link>
         <Link href="/admin/sources">Sources</Link>
         <Link href="/admin/affiliate-links">Affiliate Links</Link>
+                <Link href="/admin/time-machine">Time Machine</Link>
         <div className="flex-1" />
         <LogoutButton />
       </nav>

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 
+
+
+
 function formatResult(r: any) {
   const a = r.address || {}
   const parts: string[] = []

@@ -194,4 +194,39 @@ button, a, [role="button"] {
   outline-color: rgba(255, 255, 255, 0.4);
 }
 
+@keyframes tmResultsIn {
+  from { opacity: 0; transform: translateY(56px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.tm-results-in { animation: tmResultsIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+/* New word fading in when a city or year is picked */
+@keyframes tmWord {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.tm-word { animation: tmWord 350ms ease both; }
+
+/* Posters arrive slightly after the photo */
+.tm-late { animation: tmIn 700ms ease 350ms both; }
+
+
+/* Time Machine film grain: jumps between positions, like real film */
+@keyframes tmGrain {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-5%, -8%); }
+  20%  { transform: translate(-12%, 4%); }
+  30%  { transform: translate(7%, -14%); }
+  40%  { transform: translate(-3%, 12%); }
+  50%  { transform: translate(-10%, 5%); }
+  60%  { transform: translate(9%, 0%); }
+  70%  { transform: translate(0%, 10%); }
+  80%  { transform: translate(-8%, 8%); }
+  90%  { transform: translate(6%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+.tm-grain { animation: tmGrain 900ms steps(1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-grain { animation: none; }
+}
