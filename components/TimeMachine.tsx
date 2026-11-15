@@ -28,7 +28,7 @@ const MOBILE_FADE_PCT = 35          // % of the photo's height that fades into t
 const MOBILE_POSTER_OVERLAP = 48    // px the first row of posters rises over the bottom of the photo (0 = off)
 
 const FADE_UP = 'linear-gradient(to top, #09090b 0%, rgba(9,9,11,0.85) 0%, rgba(9,9,11,0) 100%)'
-const FADE_DOWN = 'linear-gradient(to bottom, rgba(9,9,11,0.55) 0%, rgba(9,9,11,0) 100%)'
+const FADE_DOWN = 'linear-gradient(to bottom, rgba(9,9,11,0) 0%, rgba(9,9,11,0) 100%)'
 
 // Film grain over the photo.
 // To remove it: delete the <Grain ... /> lines in renderScene, or set NOISE_OPACITY to 0.
