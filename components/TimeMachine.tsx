@@ -810,7 +810,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
                 onClick={() => setIdx((i) => Math.min(scenes.length - 1, i + 1))}
                 disabled={idx === scenes.length - 1}
                 aria-label="Next theatre"
-                className={`pointer-events-auto absolute right-3 ${isMobile ? MOBILE_ARROWS_TOP : 'top-1/2'} -translate-y-1/2 w-9 h-9 rounded-full bg-zinc-950/60 hover:bg-zinc-900 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-default`}
+                className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-zinc-950/60 hover:bg-zinc-900 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-default"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <polyline points="9 18 15 12 9 6" />
