@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   )
   const data = await res.json()
   return NextResponse.json(
-    data.results?.slice(0, 5).map((m: any) => ({
+    data.results?.slice(0, 20).map((m: any) => ({
       tmdb_id: m.id,
       title: m.title,
       year: m.release_date?.slice(0, 4),

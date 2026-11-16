@@ -13,11 +13,14 @@ const SPINNER_MIN_MS = 800   // the spinner shows at least this long
 
 // How the scene arrives (ms after the stage starts fading in)
 const DELAY_TEXT = 500
-const DELAY_POSTERS = 900
-const DELAY_FOOTER = 1500
+const DELAY_POSTERS = 300
+const DELAY_FOOTER = 600
 
 // Desktop poster height. Edit to fine-tune.
 const HERO_POSTER_H = 'h-[22dvh] md:h-[20dvh]'
+// Desktop: the photo drifts upward to reveal its lower part.
+const PAN_EXTRA_PCT = 12   // extra height given to the photo = how far it drifts (0 = off)
+const PAN_MS = 34000       // duration of the drift
 
 // Mobile layout. Edit to fine-tune.
 const MOBILE_PHOTO_MAX_H = '100dvh'   // tallest the photo can get; 'none' = never crop   // tallest the photo can be (matters for vertical photos)
@@ -105,6 +108,19 @@ function photoMotion(on: boolean): CSSProperties {
     transition: 'transform 2600ms cubic-bezier(0.16, 1, 0.3, 1)',
   }
 }
+
+// Desktop: the photo is a little taller than the screen and slowly slides up
+function panMotion(on: boolean): CSSProperties {
+  if (PAN_EXTRA_PCT <= 0) return { height: '100%' }
+  const shift = (PAN_EXTRA_PCT / (100 + PAN_EXTRA_PCT)) * 100
+  return {
+    height: `${100 + PAN_EXTRA_PCT}%`,
+    transform: `translateY(${on ? -shift : 0}%)`,
+    transition: on ? `transform ${PAN_MS}ms ease-in-out` : 'transform 900ms ease',
+  }
+}
+
+
 
 // Makes the bottom of an element dissolve (transparent), instead of laying a dark gradient over it.
 // What shows through is whatever sits behind: here, the blurred copy of the same photo.
@@ -227,11 +243,19 @@ function WordSelect({ value, placeholder, options, onChange, disabled, onOpenCha
 
   const selected = options.find((o) => o.value === value)
   const label = selected?.label ?? placeholder
+    const [rendered, setRendered] = useState(false)
 
   // Tell the parent when this dropdown opens or closes
   useEffect(() => {
     openRef.current = open
     onOpenChange?.(open)
+  }, [open])
+
+    // Keep the menu in the DOM while it plays its exit animation
+  useEffect(() => {
+    if (open) { setRendered(true); return }
+    const t = setTimeout(() => setRendered(false), 160)
+    return () => clearTimeout(t)
   }, [open])
 
   // If the word disappears while its list is open, release it
@@ -283,21 +307,35 @@ function WordSelect({ value, placeholder, options, onChange, disabled, onOpenCha
         <span key={label} ref={textRef} className="tm-word inline-block">{label}</span>
       </button>
 
-      {open && (
-        <span className="absolute left-1/2 -translate-x-1/2 top-full mt-4 z-20 flex flex-col items-center max-h-[40dvh] overflow-y-auto overscroll-contain bg-zinc-950 py-2 px-6">
-          {options.map((o, i) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => { onChange(o.value); setOpen(false) }}
-              className={`whitespace-nowrap py-1 text-2xl sm:text-3xl cursor-pointer transition-colors ${
-                o.value === value ? 'text-amber-400' : 'text-zinc-500 hover:text-amber-300'
-              }`}
-              style={{ animation: 'tmCascade 240ms ease both', animationDelay: `${i * 35}ms` }}
-            >
-              {o.label}
-            </button>
-          ))}
+          {rendered && (
+        <span className="absolute left-1/2 -translate-x-1/2 top-full mt-4 z-20">
+          <span
+            className="flex flex-col items-center max-h-[40dvh] overflow-y-auto overscroll-contain bg-zinc-950 backdrop-blur-sm py-2 px-6"
+            style={{
+              transformOrigin: 'top center',
+              animation: open
+                ? 'tmMenuIn 240ms cubic-bezier(0.16, 1, 0.3, 1) both'
+                : 'tmMenuOut 160ms ease both',
+              pointerEvents: open ? 'auto' : 'none',
+            }}
+          >
+            {options.map((o, i) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => { onChange(o.value); setOpen(false) }}
+                className={`whitespace-nowrap py-1 text-2xl sm:text-3xl cursor-pointer transition-colors ${
+                  o.value === value ? 'text-amber-400' : 'text-zinc-500 hover:text-amber-300'
+                }`}
+                style={{
+                  animation: 'tmCascade 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
+                  animationDelay: `${40 + Math.min(i, 8) * 30}ms`,
+                }}
+              >
+                {o.label}
+              </button>
+            ))}
+          </span>
         </span>
       )}
     </span>
@@ -519,7 +557,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
     return (
       <div style={style} className={`flex flex-wrap justify-center gap-3 w-full ${MOBILE_GRID_W} mx-auto`}>
         {movies.map((m, i) => (
-          <button key={`${keyPrefix}-${i}`} type="button" onClick={() => setMovie(m)} className="w-[calc(50%_-_6px)] cursor-pointer">
+          <button key={`${keyPrefix}-${i}`} type="button" onClick={() => setMovie(m)} className="w-[calc(33.333%_-_8px)] cursor-pointer">
             {m.poster_path ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -576,8 +614,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
   function renderScene(sc: Scene, active: boolean) {
     const on = revealed && active
     const { hero } = sc
-    const grainMoves = NOISE_ANIMATED && !isMobile // still grain on phones, to spare the battery
-
+    const grainMoves = NOISE_ANIMATED
     // Scenes crossfade; hidden ones can't be clicked or focused
     const shell: CSSProperties = {
       opacity: on ? 1 : 0,
@@ -598,14 +635,16 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
           {/* Backdrop: same photo, blurred, covering the whole screen */}
           <div className="absolute inset-0 overflow-hidden isolate bg-zinc-950">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imgUrl(hero.storage_path)}
-              alt=""
+             
+          <img
+            src={imgUrl(hero.storage_path)}
+            alt={sc.theater.name}
+         
               aria-hidden
               draggable={false}
               className="absolute inset-0 h-full w-full object-cover"
               style={{ filter: `blur(${MOBILE_BLUR_PX}px)`, transform: 'scale(1.25)' }}
-            />
+          />
             <div className="absolute inset-0" style={{ background: `rgba(9,9,11,${MOBILE_DIM})` }} />
             <Grain animated={grainMoves} />
             <div className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none" style={{ background: FADE_UP }} />
@@ -617,8 +656,8 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
             className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <div className="h-full flex flex-col">
-              {/* Two equal spaces above and below the photo keep it centered */}
-              <div style={{ flex: '1 1 0px', minHeight: 0 }} />
+              {/* Two equal spaces above and below the photo keep it centered 
+              <div style={{ flex: '1 1 0px', minHeight: 0 }} /> */}
 
                                       <div
                 className="relative isolate shrink-0 overflow-hidden"
@@ -649,7 +688,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
                   className="relative z-10 flex flex-col gap-6 px-4 pb-10"
                   style={{ marginTop: -MOBILE_POSTER_OVERLAP }}
                 >
-                  {posterGrid(hero.movies, hero.id, reveal(on, DELAY_POSTERS, 24))}
+                  {posterGrid(hero.movies, hero.id, reveal(on, DELAY_POSTERS, 12))}
                   <div style={reveal(on, DELAY_FOOTER, 8)}>{footer(sc)}</div>
                 </div>
               </div>
@@ -669,15 +708,17 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
         aria-hidden={!on}
       >
         <div className="relative h-[100dvh] w-full overflow-hidden isolate">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imgUrl(hero.storage_path)}
-            alt={sc.theater.name}
-            draggable={false}
-            onClick={() => zoomPhoto(hero)}
-            className="absolute inset-0 h-full w-full object-cover cursor-zoom-in"
-            style={photoMotion(on)}
-          />
+                   <div className="absolute inset-x-0 top-0" style={panMotion(on)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imgUrl(hero.storage_path)}
+              alt={sc.theater.name}
+              draggable={false}
+              onClick={() => zoomPhoto(hero)}
+              className="h-full w-full object-cover cursor-zoom-in"
+              style={photoMotion(on)}
+            />
+          </div>
           <Grain animated={grainMoves} />
           <div className="absolute inset-x-0 top-0 h-28 pointer-events-none" style={{ background: FADE_DOWN }} />
           <div className="absolute inset-x-0 bottom-0 h-[75%] pointer-events-none" style={{ background: FADE_UP }} />
@@ -764,6 +805,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
                     onChange={selectCity}
                     onOpenChange={trackDropdown}
                                    />{' '}
+                                    <br className="md:hidden" />
                   <span className="whitespace-nowrap">
                     in{'\u00a0'}
                     <WordSelect
