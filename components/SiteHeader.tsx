@@ -111,21 +111,21 @@ export default function SiteHeader({
       <button
         ref={mapRef}
         onClick={() => handleViewToggle('map')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-zinc-900' : 'text-zinc-300'}`}
+        className={`font-medium relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'map' ? 'text-zinc-900' : 'text-zinc-100'}`}
       >
         Map
       </button>
       <button
         ref={listRef}
         onClick={() => handleViewToggle('list')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-zinc-900' : 'text-zinc-300'}`}
+        className={`font-medium relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'list' ? 'text-zinc-900' : 'text-zinc-100'}`}
       >
         Theatres
       </button>
       <button
         ref={filmsRef}
         onClick={() => handleViewToggle('films')}
-        className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-zinc-900' : 'text-zinc-300'}`}
+        className={`font-medium relative z-10 px-3 py-1 rounded-full transition-colors duration-150 cursor-pointer ${activeView === 'films' ? 'text-zinc-900' : 'text-zinc-100'}`}
       >
         Films
       </button>
