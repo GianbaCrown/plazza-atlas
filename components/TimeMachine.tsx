@@ -19,8 +19,8 @@ const DELAY_FOOTER = 600
 // Desktop poster height. Edit to fine-tune.
 const HERO_POSTER_H = 'h-[22dvh] md:h-[20dvh]'
 // Desktop: the photo drifts upward to reveal its lower part.
-const PAN_EXTRA_PCT = 12   // extra height given to the photo = how far it drifts (0 = off)
-const PAN_MS = 34000       // duration of the drift
+// const PAN_EXTRA_PCT = 12   // extra height given to the photo = how far it drifts (0 = off)
+// const PAN_MS = 34000       // duration of the drift
 
 // Mobile layout. Edit to fine-tune.
 const MOBILE_PHOTO_MAX_H = '100dvh'   // tallest the photo can get; 'none' = never crop   // tallest the photo can be (matters for vertical photos)
@@ -68,8 +68,11 @@ type PhotoRow = {
   year: number
   width: number | null
   height: number | null
+   align: string | null
   theater: { id: string; name: string; slug: string; city: string; country: string | null }
   movies: Poster[]
+   
+ 
 }
 
 // One scene = one theater for the chosen city and year, shown with a single hero photo
@@ -86,6 +89,17 @@ const norm = (s?: string | null) => (s ?? '').trim().toLowerCase()
 const cityKey = (city?: string | null, country?: string | null) => `${norm(city)}|${norm(country)}`
 const imgUrl = (path: string) =>
   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/theater-images/${path}`
+
+
+// Which part of the photo stays in view on desktop (set per photo in the admin)
+const ALIGN_POSITION: Record<string, string> = {
+  'top': 'center 0%',
+  'top-middle': 'center 25%',
+  'middle': 'center 50%',
+  'bottom-middle': 'center 75%',
+  'bottom': 'center 100%',
+}
+const alignPosition = (a: string | null) => ALIGN_POSITION[a ?? ''] ?? ALIGN_POSITION.middle
 
 // Desktop only shows photos known to be landscape or square. Mobile shows everything.
 const usableOnDesktop = (p: PhotoRow) => p.width != null && p.height != null && p.height <= p.width
@@ -109,7 +123,7 @@ function photoMotion(on: boolean): CSSProperties {
   }
 }
 
-// Desktop: the photo is a little taller than the screen and slowly slides up
+/* Desktop: the photo is a little taller than the screen and slowly slides up
 function panMotion(on: boolean): CSSProperties {
   if (PAN_EXTRA_PCT <= 0) return { height: '100%' }
   const shift = (PAN_EXTRA_PCT / (100 + PAN_EXTRA_PCT)) * 100
@@ -118,7 +132,7 @@ function panMotion(on: boolean): CSSProperties {
     transform: `translateY(${on ? -shift : 0}%)`,
     transition: on ? `transform ${PAN_MS}ms ease-in-out` : 'transform 900ms ease',
   }
-}
+} */
 
 
 
@@ -193,7 +207,7 @@ async function loadData(): Promise<Data> {
     supabase.from('time_machine_cities').select('city, country'),
     supabase
       .from('images')
-      .select('id, storage_path, caption, credit, year, width, height, is_featured, sort_order, theaters!inner ( id, name, slug, city, country, status ), image_movies ( movies ( title, year, poster_path, tmdb_id ) )')
+      .select('id, storage_path, caption, credit, year, width, height, desktop_align, is_featured, sort_order, theaters!inner ( id, name, slug, city, country, status ), image_movies ( movies ( title, year, poster_path, tmdb_id ) )')
       .not('year', 'is', null)
       .eq('theaters.status', 'published'),
   ])
@@ -216,6 +230,7 @@ async function loadData(): Promise<Data> {
       year: r.year,
       width: r.width ?? null,
       height: r.height ?? null,
+       align: r.desktop_align ?? null,
       theater: { id: t.id, name: t.name, slug: t.slug, city: t.city, country: t.country },
       movies: (r.image_movies ?? []).map((im: any) => im.movies).filter(Boolean),
     })
@@ -708,17 +723,15 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
         aria-hidden={!on}
       >
         <div className="relative h-[100dvh] w-full overflow-hidden isolate">
-                   <div className="absolute inset-x-0 top-0" style={panMotion(on)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imgUrl(hero.storage_path)}
-              alt={sc.theater.name}
-              draggable={false}
-              onClick={() => zoomPhoto(hero)}
-              className="h-full w-full object-cover cursor-zoom-in"
-              style={photoMotion(on)}
-            />
-          </div>
+                             {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgUrl(hero.storage_path)}
+            alt={sc.theater.name}
+            draggable={false}
+            onClick={() => zoomPhoto(hero)}
+            className="absolute inset-0 h-full w-full object-cover cursor-zoom-in"
+            style={{ ...photoMotion(on), objectPosition: alignPosition(hero.align) }}
+          />
           <Grain animated={grainMoves} />
           <div className="absolute inset-x-0 top-0 h-28 pointer-events-none" style={{ background: FADE_DOWN }} />
           <div className="absolute inset-x-0 bottom-0 h-[75%] pointer-events-none" style={{ background: FADE_UP }} />

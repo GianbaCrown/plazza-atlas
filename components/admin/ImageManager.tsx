@@ -14,6 +14,8 @@ interface ImageRecord {
   is_featured: boolean
   sort_order: number
   image_movies?: any[]
+    year?: number | null
+  desktop_align?: string | null
 }
 
 interface Props {
@@ -285,6 +287,21 @@ export default function ImageManager({ theaterId, initialImages, isPending, onPe
               <option value="">Year (optional)</option>
               {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
+
+            <select
+              value={img.desktop_align ?? ''}
+              onChange={(e) => updateImageField(img.id, { desktop_align: e.target.value || null })}
+              title="Which part of the photo stays in view on desktop in the Time Machine"
+              className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">Time Machine alignment (default: Middle)</option>
+              <option value="bottom">Bottom</option>
+              <option value="bottom-middle">Bottom-Middle</option>
+              <option value="middle">Middle</option>
+              <option value="top-middle">Top-Middle</option>
+              <option value="top">Top</option>
+            </select>
+
             <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
               <input
                 type="radio"
