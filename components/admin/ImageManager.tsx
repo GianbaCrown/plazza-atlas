@@ -14,7 +14,6 @@ interface ImageRecord {
   is_featured: boolean
   sort_order: number
   image_movies?: any[]
-    year?: number | null
   desktop_align?: string | null
 }
 
