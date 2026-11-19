@@ -112,7 +112,7 @@ const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))].s
     setSaving(true)
     const payload = {
       name: form.name, slug: form.slug, description: form.description,
-      address: form.address, city: form.city, country: form.country,
+      address: form.address, city: (form.city ?? '').trim(), country: form.country,
       lat: form.lat, lng: form.lng,
       year_opened: form.year_opened, year_closed: form.year_closed,
       nearest_theater_name: form.nearest_theater_name,
@@ -198,6 +198,10 @@ const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))].s
 
   const isNew = !editingId
   const theaterId = editingId ?? pendingId
+
+    // Cities already used on the site, offered as suggestions
+  const cityOptions = [...new Set(theaters.map((t) => t.city).filter((c): c is string => !!c))]
+    .sort((a, b) => a.localeCompare(b))
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -309,8 +313,30 @@ const countries = [...new Set(theaters.map((t) => t.country).filter(Boolean))].s
                         }}
                   />
                 </div>
-                {form.lat !== 0 && <p className="text-xs text-gray-400 mt-1">{form.city}, {form.country}</p>}
-              </div>
+                <div className="mt-3">
+                  <label className="text-sm font-medium text-gray-700">City</label>
+                  <input
+                    list="city-options"
+                    value={form.city ?? ''}
+                    onChange={(e) => {
+                      update('city', e.target.value)
+                      // New theaters only: keep the slug in step. Saved slugs never change, so links stay valid.
+                      if (isNew) update('slug', slugify(form.name, e.target.value, form.country))
+                    }}
+                    onBlur={(e) => {
+                      // Snap to an existing spelling ("london" becomes "London"), and drop stray spaces
+                      const v = e.target.value.trim()
+                      const match = cityOptions.find((c) => c.toLowerCase() === v.toLowerCase())
+                      update('city', match ?? v)
+                    }}
+                    placeholder="e.g. London"
+                    className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <datalist id="city-options">
+                    {cityOptions.map((c) => <option key={c} value={c} />)}
+                  </datalist>
+                  {form.country && <p className="text-xs text-gray-400 mt-1">{form.country}</p>}
+                </div>              </div>
 
               {/* Dates */}
               <div className="flex gap-3">
