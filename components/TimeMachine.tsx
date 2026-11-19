@@ -823,7 +823,7 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
                     in{'\u00a0'}
                     <WordSelect
                       value={year !== null ? String(year) : null}
-                      placeholder="a year"
+                      placeholder="the past"
                       disabled={!cityK}
                       options={years.map((y) => ({ label: String(y), value: String(y) }))}
                       onChange={(v) => selectYear(Number(v))}
