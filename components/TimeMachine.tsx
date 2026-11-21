@@ -29,6 +29,7 @@ const MOBILE_DIM = 0.45              // how much the background is darkened (0 t
 const MOBILE_GRID_W = 'max-w-[300px]'
 const MOBILE_FADE_PCT = 35          // % of the photo's height that fades into the background at the bottom (0 = off)
 const MOBILE_POSTER_OVERLAP = 48    // px the first row of posters rises over the bottom of the photo (0 = off)
+const MOBILE_ZOOM = 1.3   // horizontal photos are shown this much bigger on mobile (1 = no zoom)
 
 const FADE_UP = 'linear-gradient(to top, #09090b 0%, rgba(9,9,11,0.85) 0%, rgba(9,9,11,0) 100%)'
 const FADE_DOWN = 'linear-gradient(to bottom, rgba(9,9,11,0) 0%, rgba(9,9,11,0) 100%)'
@@ -630,6 +631,8 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
     const on = revealed && active
     const { hero } = sc
     const grainMoves = NOISE_ANIMATED
+        // Horizontal photos are zoomed in on mobile so they take more vertical room
+    const zoomed = hero.width != null && hero.height != null && hero.width > hero.height
     // Scenes crossfade; hidden ones can't be clicked or focused
     const shell: CSSProperties = {
       opacity: on ? 1 : 0,
@@ -674,9 +677,15 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
               {/* Two equal spaces above and below the photo keep it centered 
               <div style={{ flex: '1 1 0px', minHeight: 0 }} /> */}
 
-                                      <div
+                                                    <div
                 className="relative isolate shrink-0 overflow-hidden"
-                style={{ WebkitMaskImage: fadeMask(MOBILE_FADE_PCT), maskImage: fadeMask(MOBILE_FADE_PCT) }}
+                style={{
+                  WebkitMaskImage: fadeMask(MOBILE_FADE_PCT),
+                  maskImage: fadeMask(MOBILE_FADE_PCT),
+                  ...(zoomed
+                    ? { aspectRatio: `${hero.width} / ${(hero.height as number) * MOBILE_ZOOM}`, maxHeight: MOBILE_PHOTO_MAX_H }
+                    : {}),
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -684,17 +693,14 @@ export default function TimeMachine({ onClose }: { onClose: () => void }) {
                   alt={sc.theater.name}
                   draggable={false}
                   onClick={() => zoomPhoto(hero)}
-                  className="block cursor-zoom-in"
-                                   style={{
-                    width: '100%',
-                    height: 'auto',
-                    maxHeight: MOBILE_PHOTO_MAX_H,
-                    objectFit: 'cover',
-                    ...photoMotion(on),
-                
-                  }}
+                  className={zoomed ? 'absolute inset-0 block h-full w-full cursor-zoom-in' : 'block cursor-zoom-in'}
+                  style={
+                    zoomed
+                      ? { objectFit: 'cover', objectPosition: 'center top', ...photoMotion(on) }
+                      : { width: '100%', height: 'auto', maxHeight: MOBILE_PHOTO_MAX_H, objectFit: 'cover', ...photoMotion(on) }
+                  }
                 />
-                                <Grain animated={grainMoves} />
+                <Grain animated={grainMoves} />
               </div>
           
 
